@@ -5,8 +5,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var index = require('./routes/index');
+//var index = require('./routes/index');
 var users = require('./routes/users');
+var audiofiles = require('./routes/audiofiles');
 
 var app = express();
 
@@ -17,8 +18,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/', index);
-app.use('/users', users);
+// TODO check authentification
+app.use('/api/*', function(req, res, next) {
+  next();
+});
+app.use('/api/users', users);
+app.use('/api/audiofile', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
