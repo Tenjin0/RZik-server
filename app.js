@@ -23,7 +23,7 @@ app.use('/api/*', function(req, res, next) {
   next();
 });
 app.use('/api/users', users);
-app.use('/api/audiofile', users);
+app.use('/api/audiofile', audiofiles);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
