@@ -55,7 +55,7 @@ app.get('/', function(req, res) {
 /*app.use('/users', users);*/
 
 //load passport strategies
-require('./server/config/passport/passport.js')(passport, models.user);
+require('./server/config/passport/passport.js')(passport, models.User);
 
 //Sync Database
 models.sequelize.sync().then(function() {

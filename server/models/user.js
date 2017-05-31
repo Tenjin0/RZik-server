@@ -11,7 +11,7 @@ module.exports = function(sequelize, Sequelize) {
 		  type: Sequelize.STRING,
 		  notEmpty: true
 	  },
-	  lastName: {
+	  lastname: {
 		  type: Sequelize.STRING,
 		  notEmpty: true
 	  },
