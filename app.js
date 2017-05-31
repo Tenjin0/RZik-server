@@ -4,12 +4,39 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var Sequelize = require('sequelize');
 
-//var index = require('./routes/index');
+var index = require('./routes/index');
 var users = require('./routes/users');
-var audiofiles = require('./routes/audiofiles');
-
 var app = express();
+
+var models  = require('./server/models');
+
+const sequelize_co = new Sequelize('rzik-dev', 'root', 'superBros##', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
+sequelize_co
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+	//console.log('Database : ');
+	models.user.sync({force: true}).then(() => {
+		console.log("Table users created successfully");
+		models.user.create({
+			firstName: 'John',
+			lastName: 'Hancock'
+		}).catch(err => {
+			console.error('Error while creating a new user:', err);
+			});
+	});
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -17,13 +44,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// TODO check authentification
-app.use('/api/*', function(req, res, next) {
-  next();
-});
-app.use('/api/users', users);
-app.use('/api/audiofile', users);
+app.use('/', index);
+app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -40,7 +64,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.res({ message:'error'});
+  res.render('error');
 });
 
 module.exports = app;
