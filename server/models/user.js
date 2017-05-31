@@ -1,16 +1,42 @@
 'use strict';
-var Sequelize = require("sequelize");
 
-module.exports = function(sequelize, DataTypes) {
-  var User = sequelize.define('user', {
-	  firstName: DataTypes.STRING,
-	  lastName: DataTypes.STRING,
-	  nickname: DataTypes.STRING,
-	  password: DataTypes.STRING,
-	  mail: DataTypes.STRING,
-	  birthdate: DataTypes.DATEONLY
+module.exports = function(sequelize, Sequelize) {
+  var User = sequelize.define('User', {
+	  id: {
+		  autoIncrement: true,
+		  primaryKey: true,
+		  type: Sequelize.INTEGER
+	  },
+	  firstname: {
+		  type: Sequelize.STRING,
+		  notEmpty: true
+	  },
+	  lastName: {
+		  type: Sequelize.STRING,
+		  notEmpty: true
+	  },
+	  nickname: {
+		  type: Sequelize.STRING,
+		  notEmpty: true
+	  },
+	  password: {
+		  type: Sequelize.STRING,
+		  allowNull: false
+	  },
+	  email: {
+		  type: Sequelize.STRING,
+		  validate: {
+			  isEmail: true
+		  }
+	  },
+	  last_login: {
+		  type: Sequelize.DATE
+	  },
+	  birth_date: Sequelize.DATEONLY,
+	  token: Sequelize.STRING,
+	  isModified: Sequelize.BOOLEAN
   }, {
-		freezeTableName: true,
+	  	tableName: 'user',
 		classMethods: {
 			associate: function(models) {
 				User.hasMany(models.Role, {as: 'Roles'});

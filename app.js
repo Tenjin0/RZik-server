@@ -3,51 +3,66 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var Sequelize = require('sequelize');
+var bodyParser = require('body-parser')
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 var app = express();
 
-var models  = require('./server/models');
+var passport = require('passport');
+var session  = require('express-session');
+var jwt = require('jsonwebtoken');
 
-const sequelize_co = new Sequelize('rzik-dev', 'root', 'superBros##', {
-  host: 'localhost',
-  dialect: 'mysql'
-});
-sequelize_co
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
-	//console.log('Database : ');
-	models.user.sync({force: true}).then(() => {
-		console.log("Table users created successfully");
-		models.user.create({
-			firstName: 'John',
-			lastName: 'Hancock'
-		}).catch(err => {
-			console.error('Error while creating a new user:', err);
-			});
-	});
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
-// view engine setup
+var exphbs = require('express-handlebars');
+
+//For Handlebars
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.engine('hbs', exphbs({
+  extname: '.hbs'
+}));
+app.set('view engine', '.hbs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
-app.use('/users', users);
+// For Passport
+app.use(session({
+  secret: 'forbidden dog grey me',
+  resave: true,
+  saveUninitialized:true})); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+
+var env = require('dotenv').load();
+
+//Models
+var models = require("./server/models");
+
+//Routes
+var authRoute = require('./routes/auth.js')(app,passport);
+
+//app.use('/', index);
+app.get('/', function(req, res) {
+
+  res.send('Welcome to Passport with Sequelize');
+
+});
+/*app.use('/users', users);*/
+
+//load passport strategies
+require('./server/config/passport/passport.js')(passport, models.user);
+
+//Sync Database
+models.sequelize.sync().then(function() {
+  console.log('Nice! Database looks fine')
+}).catch(function(err) {
+  console.log(err, "Something went wrong with the Database Update!")
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -64,7 +79,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  console.log(err.message);
 });
 
 module.exports = app;
