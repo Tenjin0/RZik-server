@@ -1,5 +1,5 @@
-// Audiofile = require('../models/').Audiofile;
-// Genre = require('../models/').Genre;
+Audiofile = require('../models/').Audiofile;
+Genre = require('../models/').Genre;
 
 module.exports = {
     index(req, res) {
@@ -18,7 +18,9 @@ module.exports = {
     },
 
     create(req, res) {
-        req.db.Audiofile.create(req.body)
+        console.warn('toto');
+        console.warn(req.body);
+        Audiofile.create(req.body)
             .then((audiofile) => {
                 for (var i = 0; i < req.body.genres.length; i++) {
                     Genre.findById(req.body.genres[i])
@@ -34,7 +36,7 @@ module.exports = {
     },
 
     view(req, res) {
-        req.db.Audiofile.find({
+        Audiofile.find({
                 id: req.params.id,
                 include: [{
                     model: req.db.Genre,
@@ -49,7 +51,7 @@ module.exports = {
             })
     },
     update(req, res) {
-        req.db.Audiofile.update(req.body, {
+        Audiofile.update(req.body, {
                 where: {
                     id: req.params.id
                 }
@@ -62,7 +64,7 @@ module.exports = {
             });
     },
     delete(req, res) {
-        req.db.Audiofile.destroy({
+        Audiofile.destroy({
                 where: {
                     id: req.params.id
                 }
