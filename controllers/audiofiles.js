@@ -18,8 +18,6 @@ module.exports = {
     },
 
     create(req, res) {
-        console.warn('toto');
-        console.warn(req.body);
         Audiofile.create(req.body)
             .then((audiofile) => {
                 for (var i = 0; i < req.body.genres.length; i++) {
