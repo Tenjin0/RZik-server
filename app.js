@@ -4,16 +4,17 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var index = require('./routes/index');
-var users = require('./routes/user');
-var app = express();
-
 var passport = require('passport');
 var session  = require('express-session');
-var jwt = require('jsonwebtoken');
-
 var exphbs = require('express-handlebars');
+
+// var Models
+var models = require("./server/models");
+
+// var Routes
+var users = require('./routes/user');
+
+var app = express();
 
 //For Handlebars
 app.set('views', path.join(__dirname, 'views'));
@@ -25,39 +26,29 @@ app.set('view engine', '.hbs');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// For Passport
-app.use(session({
-  secret: 'forbidden dog grey me',
-  resave: true,
-  saveUninitialized:true})); // session secret
+// passport init
 app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
 
 var env = require('dotenv').load();
 
-//Models
-var models = require("./server/models");
-
 //Routes
-var authRoute = require('./routes/auth.js')(app,passport);
+require('./routes/auth.js')(app,passport);
 
-//app.use('/', index);
 app.get('/', function(req, res) {
   res.send('Welcome to Passport with Sequelize');
 });
 app.use('/users', users);
-//var userRoute = require('./routes/user.js')(app);
 
 //load passport strategies
 require('./server/config/passport/passport.js')(passport, models.User);
 
 //Sync Database
-models.sequelize.sync({force:true}).then(function() {
+models.sequelize.sync().then(function() {
   console.log('Nice! Database looks fine')
 }).catch(function(err) {
   console.log(err, "Something went wrong with the Database Update!")
@@ -78,7 +69,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  console.log(err.message + "this one");
+  res.end();
 });
 
 module.exports = app;

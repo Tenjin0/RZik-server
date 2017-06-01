@@ -7,7 +7,7 @@ var Users = {
         res.render('edit');
     },
     edit: function (req, res) {
-        
+        console.log("edit");
         let pass = req.body.password;
         let generateHash = function() {
             return bCrypt.hashSync(pass, bCrypt.genSaltSync(8), null);

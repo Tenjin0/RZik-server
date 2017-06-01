@@ -1,7 +1,5 @@
-var User = require('../server/models/user');
 var jwt = require('jsonwebtoken');
 var config = require('../server/config/config.json');
-var cookie = require('cookie');
 
 exports.getToken = function(user) {
 	return jwt.sign(user, config.secretKey);
@@ -10,6 +8,7 @@ exports.getToken = function(user) {
 exports.verifyUser = function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
+		console.log(token);
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
 				res.json(err);
@@ -44,4 +43,4 @@ exports.verifyRole = function(requiredRole){
 			}
 		})
 	}
-}
+};

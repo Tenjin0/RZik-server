@@ -29,18 +29,16 @@ module.exports = function(sequelize, Sequelize) {
 			  isEmail: true
 		  }
 	  },
+	  birth_date: Sequelize.DATEONLY,
 	  last_login: {
 		  type: Sequelize.DATE
-	  },
-	  birth_date: Sequelize.DATEONLY,
-	  token: Sequelize.STRING,
-	  isModified: Sequelize.BOOLEAN
+	  }
   }, {
 	  	tableName: 'user',
 	  	timestamps: false,
 		classMethods: {
 			associate: function(models) {
-				
+				//Empty
 			}
 		}
 	});

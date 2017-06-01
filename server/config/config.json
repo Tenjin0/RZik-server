@@ -23,5 +23,5 @@
 	"port": 3306,
     "dialect": "mysql"
   },
-  "secretKey": "azertyuiop"
+  "secretKey":"azertyiop"
 }

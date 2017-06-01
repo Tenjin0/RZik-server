@@ -1,12 +1,31 @@
 var bCrypt = require('bcrypt-nodejs');
+var config = require('../config.json');
 
 module.exports = function(passport, user) {
 
     let User = user;
     let LocalStrategy = require('passport-local').Strategy;
+    var JwtStrategy = require('passport-jwt').Strategy,
+        ExtractJwt = require('passport-jwt').ExtractJwt;
+    var opts = {};
+    opts.jwtFromRequest = ExtractJwt.fromHeader('jwt');
+    opts.secretOrKey = config.secretKey;
+    passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+        console.log("authentication process");
+        User.findOne({id: jwt_payload.sub}, function(err, user) {
+            if (err) {
+                return done(err, false);
+            }
+            if (user) {
+                return done(null, user);
+            } else {
+                return done(null, false);
+                // or you could create a new account
+            }
+        });
+    }));
 
     passport.use('local-signup', new LocalStrategy(
-
         {
             usernameField: 'email',
             passwordField: 'password',
@@ -23,7 +42,7 @@ module.exports = function(passport, user) {
             }).then(function(user) {
                 if (user)
                 {
-                    return done(null, false, {
+                    return done(true, false, {
                         message: 'That email is already taken'
                     });
                 } else
@@ -40,10 +59,12 @@ module.exports = function(passport, user) {
                     };
                     User.create(data).then(function(newUser, created) {
                         if (!newUser) {
-                            return done(null, false);
+                            return done(true, false, {
+                                message: 'Something went wrong with your Signup'
+                            });
                         }
                         if (newUser) {
-                            return done(null, newUser);
+                            return done(null, false, newUser);
                         }
                     });
                 }
@@ -59,37 +80,31 @@ module.exports = function(passport, user) {
             passwordField: 'password',
             passReqToCallback: true // allows us to pass back the entire request to the callback
         },
-
         function(req, email, password, done) {
             var User = user;
             var isValidPassword = function(userpass, password) {
                 return bCrypt.compareSync(password, userpass);
             };
-
             User.findOne({
                 where: {
                     email: email
                 }
             }).then(function(user) {
-
                 if (!user) {
-                    return done(null, false, {
+                    return done(true, false, {
                         message: 'Email does not exist'
                     });
                 }
 
                 if (!isValidPassword(user.password, password)) {
-                    return done(null, false, {
+                    return done(true, false, {
                         message: 'Incorrect password.'
                     });
                 }
-
-                var userinfo = user.get();
-                return done(null, userinfo);
-
+                return done(null, user.get());
             }).catch(function(err) {
                 console.log("Error:", err);
-                return done(null, false, {
+                return done(true, false, {
                     message: 'Something went wrong with your Signin'
                 });
             });
