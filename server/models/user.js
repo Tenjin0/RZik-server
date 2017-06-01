@@ -37,9 +37,10 @@ module.exports = function(sequelize, Sequelize) {
 	  isModified: Sequelize.BOOLEAN
   }, {
 	  	tableName: 'user',
+	  	timestamps: false,
 		classMethods: {
 			associate: function(models) {
-				User.hasMany(models.Role, {as: 'Roles'});
+				
 			}
 		}
 	});

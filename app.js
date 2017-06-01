@@ -3,10 +3,10 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
-var users = require('./routes/users');
+var users = require('./routes/user');
 var app = express();
 
 var passport = require('passport');
@@ -50,13 +50,14 @@ var authRoute = require('./routes/auth.js')(app,passport);
 app.get('/', function(req, res) {
   res.send('Welcome to Passport with Sequelize');
 });
-/*app.use('/users', users);*/
+app.use('/users', users);
+//var userRoute = require('./routes/user.js')(app);
 
 //load passport strategies
 require('./server/config/passport/passport.js')(passport, models.User);
 
 //Sync Database
-models.sequelize.sync().then(function() {
+models.sequelize.sync({force:true}).then(function() {
   console.log('Nice! Database looks fine')
 }).catch(function(err) {
   console.log(err, "Something went wrong with the Database Update!")
