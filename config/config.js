@@ -3,7 +3,7 @@ var config = {
     "username": "root",
     "password": process.env.MYSQL_PASS || "pass",
     "database": "rzik_development",
-    "host": "127.0.0.1",
+    "host": process.env.MYSQL_HOST || "127.0.0.1",
     "port": 3306,
     "dialect": "mysql",
     "undescored" : false
@@ -28,4 +28,4 @@ var config = {
   }
 }
 
-module.exports = config
+module.exports = config;
