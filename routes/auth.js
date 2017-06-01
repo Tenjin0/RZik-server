@@ -13,6 +13,20 @@ module.exports = function(app, passport) {
         }
     ));
 
-    app.get('/dashboard',authController.dashboard);
+    app.post('/signin', passport.authenticate('local-signin', {
+            successRedirect: '/dashboard',
+            failureRedirect: '/signin'
+        }
+    ));
+
+    app.get('/logout',authController.logout);
+
+    app.get('/dashboard', isLoggedIn, authController.dashboard);
+
+    function isLoggedIn(req, res, next) {
+        if (req.isAuthenticated())
+            return next();
+        res.redirect('/signin');
+    }
 
 };

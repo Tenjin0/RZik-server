@@ -48,9 +48,7 @@ var authRoute = require('./routes/auth.js')(app,passport);
 
 //app.use('/', index);
 app.get('/', function(req, res) {
-
   res.send('Welcome to Passport with Sequelize');
-
 });
 /*app.use('/users', users);*/
 
@@ -79,7 +77,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  console.log(err.message);
+  console.log(err.message + "this one");
 });
 
 module.exports = app;

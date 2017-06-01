@@ -9,5 +9,12 @@ exports.signin = function(req, res) {
 };
 
 exports.dashboard = function(req, res) {
+    console.log("hey we gona render dashboard");
     res.render('dashboard');
+};
+
+exports.logout = function(req, res) {
+    req.session.destroy(function(err) {
+        res.redirect('/');
+    });
 };
