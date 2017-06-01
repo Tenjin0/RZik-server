@@ -1,4 +1,5 @@
 'use strict';
+
 module.exports = function(sequelize, DataTypes) {
     var Audiofile = sequelize.define('Audiofile', {
         title: DataTypes.STRING,
@@ -6,6 +7,9 @@ module.exports = function(sequelize, DataTypes) {
         cover: DataTypes.STRING,
         artist: DataTypes.STRING,
         composer: DataTypes.STRING,
+        original_filename: DataTypes.STRING,
+        new_filename: DataTypes.STRING,
+        mimetype: DataTypes.STRING,
         explicit_content: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
@@ -26,6 +30,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         classMethods: {
             associate: function(models) {
+                // Audiofile.belongsTo(models.User);
                 // associations can be defined here
             }
         }
