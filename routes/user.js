@@ -1,12 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var user = require('../controllers/user.js');
-var passport = require('passport');
+var verify = require('../middlewares/verify');
 
-router.get('/:id', user.editview);
 router.put(
     '/:id',
-    passport.authenticate("jwt", { session: false }),
+    verify.verifyUser,
     user.edit);
 
 module.exports = router;

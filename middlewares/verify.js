@@ -2,16 +2,15 @@ var jwt = require('jsonwebtoken');
 var config = require('../server/config/config.json');
 
 exports.getToken = function(user) {
-	return jwt.sign(user, config.secretKey);
+	return jwt.sign(user.id, config.secretKey);
 };
 
 exports.verifyUser = function(req, res, next) {
-	var token = req.body.token || req.query.token || req.headers['x-access-token'];
+	var token = req.body.token || req.query.token || req.cookies['jwtToken'];
 	if (token) {
-		console.log(token);
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
-				res.json(err);
+				res.status(401).json(err);
 			}
 			else {
 				req.decoded = decoded;
@@ -20,7 +19,7 @@ exports.verifyUser = function(req, res, next) {
 		})
 	}
 	else {
-		res.json({message: "no token"});
+		res.status(401).json({message: "no token"});
 	}
 };
 

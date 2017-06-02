@@ -1,29 +1,11 @@
 var bCrypt = require('bcrypt-nodejs');
 var config = require('../config.json');
+var language = require('../../../server/enum/enumerators');
 
 module.exports = function(passport, user) {
 
     let User = user;
     let LocalStrategy = require('passport-local').Strategy;
-    var JwtStrategy = require('passport-jwt').Strategy,
-        ExtractJwt = require('passport-jwt').ExtractJwt;
-    var opts = {};
-    opts.jwtFromRequest = ExtractJwt.fromHeader('jwt');
-    opts.secretOrKey = config.secretKey;
-    passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-        console.log("authentication process");
-        User.findOne({id: jwt_payload.sub}, function(err, user) {
-            if (err) {
-                return done(err, false);
-            }
-            if (user) {
-                return done(null, user);
-            } else {
-                return done(null, false);
-                // or you could create a new account
-            }
-        });
-    }));
 
     passport.use('local-signup', new LocalStrategy(
         {
@@ -32,6 +14,7 @@ module.exports = function(passport, user) {
             passReqToCallback: true
         },
         function(req, email, password, done) {
+            let errors = {};
             let generateHash = function(password) {
                 return bCrypt.hashSync(password, bCrypt.genSaltSync(8), null);
             };
@@ -42,9 +25,8 @@ module.exports = function(passport, user) {
             }).then(function(user) {
                 if (user)
                 {
-                    return done(true, false, {
-                        message: 'That email is already taken'
-                    });
+                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
+                    return done(null, false, errors);
                 } else
                 {
                     let userPassword = generateHash(password);
@@ -59,28 +41,27 @@ module.exports = function(passport, user) {
                     };
                     User.create(data).then(function(newUser, created) {
                         if (!newUser) {
-                            return done(true, false, {
-                                message: 'Something went wrong with your Signup'
-                            });
+                            errors.message = language.SIGNUP_UNKNOWN_ERROR;
+                            return done(null, false, errors);
                         }
                         if (newUser) {
-                            return done(null, false, newUser);
+                            return done(null, newUser, errors);
                         }
                     });
                 }
             });
         }
     ));
-
-    //LOCAL SIGNIN
+    
     passport.use('local-signin', new LocalStrategy(
         {
-            // by default, local strategy uses username and password, we will override with email
+            // by default, local strategy uses username and password, we override with email
             usernameField: 'email',
             passwordField: 'password',
-            passReqToCallback: true // allows us to pass back the entire request to the callback
+            passReqToCallback: true
         },
         function(req, email, password, done) {
+            let errors = {};
             var User = user;
             var isValidPassword = function(userpass, password) {
                 return bCrypt.compareSync(password, userpass);
@@ -91,32 +72,31 @@ module.exports = function(passport, user) {
                 }
             }).then(function(user) {
                 if (!user) {
-                    return done(true, false, {
-                        message: 'Email does not exist'
-                    });
+                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
+                    return done(null, false, errors);
                 }
 
                 if (!isValidPassword(user.password, password)) {
-                    return done(true, false, {
-                        message: 'Incorrect password.'
-                    });
+                    errors.message = language.AUTH_WRONG_PASSWORD;
+                    return done(null, false, errors);
                 }
-                return done(null, user.get());
-            }).catch(function(err) {
-                console.log("Error:", err);
-                return done(true, false, {
-                    message: 'Something went wrong with your Signin'
+                var currenttime = new Date();
+                user.update({last_login: currenttime},{
+                    where: {
+                        id: user.id
+                    }
                 });
+                return done(null, user.get(), errors);
+            }).catch(function(err) {
+                return done(err);
             });
         }
     ));
-
-    //serialize
+    
     passport.serializeUser(function(user, done) {
         done(null, user.id);
     });
-
-    // deserialize user
+    
     passport.deserializeUser(function(id, done) {
         User.findById(id).then(function(user) {
             if (user) {

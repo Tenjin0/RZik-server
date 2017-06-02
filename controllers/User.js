@@ -1,26 +1,43 @@
 'use strict'; 
 
 var models  = require('../server/models');
+var bCrypt = require('bcrypt-nodejs');
+var language = require('../server/enum/enumerators');
 
 var Users = {
-    editview: function (req, res) {
-        res.render('edit');
-    },
     edit: function (req, res) {
-        console.log("edit");
         let pass = req.body.password;
         let generateHash = function() {
             return bCrypt.hashSync(pass, bCrypt.genSaltSync(8), null);
         };
-        let userPassword = generateHash(password);
-        models
-            .user
-            .update({
-                password: userPassword
-            })
-            .then(function(user) {
-                console.log(user.nickname + "have been edited")
-            });
+        let userPassword = generateHash(pass);
+
+        new Promise(
+            function(resolve, reject) {
+                models.User.update({
+                    password : userPassword
+                },{
+                    where:{
+                        id: req.decoded
+                    }
+                }).then(function(user) {
+                    resolve(user);
+                }).catch(function(err) {
+                    reject(err);
+                });
+            }
+        ).then(
+            function(user) {
+                res.json(language.USER_EDIT_SUCCESS);
+            }).catch(
+            function(err) {
+                res.json(err);
+            }
+        );
+    },
+    test : function(req, res){
+        console.log(language.USER_EDIT_SUCCESS);
+        res.json();
     }
 };
 

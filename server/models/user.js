@@ -31,7 +31,10 @@ module.exports = function(sequelize, Sequelize) {
 	  },
 	  birth_date: Sequelize.DATEONLY,
 	  last_login: {
-		  type: Sequelize.DATE
+		  type: Sequelize.DATE,
+		  defaultValue: function() {
+			  return new Date()
+		  }
 	  }
   }, {
 	  	tableName: 'user',
