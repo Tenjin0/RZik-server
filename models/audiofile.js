@@ -23,6 +23,7 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             allowNull: false
         },
+        genders: DataTypes.VIRTUAL,
         creation_date: DataTypes.DATE,
         duration: DataTypes.TIME
     }, {

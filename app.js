@@ -1,16 +1,19 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var index = require('./routes/index');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-var users = require('./routes/users');
-var audiofiles = require('./routes/audiofiles');
-var models = require('./models/');
+const models = require('./models/');
 
-var app = express();
+const index = require('./routes/index');
+const users = require('./routes/users');
+const audiofiles = require('./routes/audiofiles');
+const genders = require('./routes/genders');
+const test = require('./routes/test');
+
+const app = express();
 
 
 const multer = require('multer');
@@ -55,9 +58,12 @@ app.use('/api/*', function(req, res, next) {
 
 
 app.get('/', index);
+
 app.use('/api/users', users);
+app.use('/api/test', test);
+app.use('/api/genders', genders);
 app.use('/api/audiofiles', function(req, res, next) {
-        console.warn(req.body);
+        console.warn('audiofiles', req.body);
         next();
     },
     audiofiles);
@@ -74,7 +80,7 @@ app.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-
+    console.warn(err);
     // render the error page
     res.status(err.status || 500);
     res.json({ message: 'error' });

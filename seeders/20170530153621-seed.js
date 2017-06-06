@@ -12,7 +12,7 @@ module.exports = {
         isBetaMember: false
       }], {});
     */
-    return queryInterface.bulkInsert('Genres', [{
+    return queryInterface.bulkInsert('Genders', [{
         name: 'Hip hop',
       },{ name : 'Rock alternatif'}], {});
   },
