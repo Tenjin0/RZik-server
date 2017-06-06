@@ -54,7 +54,6 @@ require('./routes/auth.js')(app);
 // });
 
 app.use('/api/*', verify.verifyUser, function(req, res, next) {
-    console.warn(req.body);
     console.warn(req.decoded);
 
     next();

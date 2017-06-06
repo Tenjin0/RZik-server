@@ -13,6 +13,7 @@ exports.verifyUser = function(req, res, next) {
 				res.status(401).json(err);
 			}
 			else {
+				console.warn('todo verify')
 				req.decoded = decoded;
 				next();
 			}
