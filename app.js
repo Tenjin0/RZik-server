@@ -54,8 +54,6 @@ require('./routes/auth.js')(app);
 // });
 
 app.use('/api/*', verify.verifyUser, function(req, res, next) {
-    console.warn(req.decoded);
-
     next();
 });
 
@@ -65,7 +63,6 @@ app.use('/api/users', users);
 app.use('/api/test', test);
 app.use('/api/genders', genders);
 app.use('/api/audiofiles', function(req, res, next) {
-        console.warn('audiofiles', req.body);
         next();
     },
     audiofiles);

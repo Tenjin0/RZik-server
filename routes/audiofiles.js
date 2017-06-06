@@ -21,13 +21,12 @@ var storage = multer.memoryStorage(),
 
 /* GET users listing. */
 router.get('/', audioController.index);
+router.get('/myuploads', audioController.myuploads);
 router.post('/metadata',uploadMetadata, audioController.metadata);
 router.post('/', upload.fields([
     { name: 'cover', maxCount: 1 },
     { name: 'audio_file', maxCount: 1 }
 ]), (req, res, next) => {
-    // console.warn(req.body);
-    // console.warn(req.files);
     next();
 }, audioController.create);
 router.get('/:id', audioController.view);

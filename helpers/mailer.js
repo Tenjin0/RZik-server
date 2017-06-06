@@ -1,7 +1,7 @@
 'use strict';
 const nodemailer = require('nodemailer');
 const config = require('../config.js')
-console.warn(config);
+
 // create reusable transporter object using the default SMTP transport
 let transporter = nodemailer.createTransport({
     host: config.SMTP_URL,

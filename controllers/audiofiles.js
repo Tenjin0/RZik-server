@@ -52,6 +52,12 @@ const index = (req, res)  => {
             attributes: ['id', 'name']
         }]
     }
+     var opts = {
+        include: [{
+            model: Gender,
+            attributes: ['id', 'name']
+        }]
+    }
     if (req.query.limit && req.query.offset) {
         opts.limit = parseInt(req.query.limit, 10);
         opts.offset = parseInt(req.query.offset, 10);;
@@ -61,15 +67,16 @@ const index = (req, res)  => {
             res.status(200).json(audiofiles);
         })
         .catch((error) => {
-            console.warn(error)
             res.status(500).json(error);
         })
 };
 
 const create = (req, res) => {
-    console.warn('create')
     if (!req.body.genders) {
         req.body.genders = [];
+    }
+    if (req.decoded) {
+        req.body.id_user = req.decoded;
     }
     if (req.files && req.files.audio_file) {
         req.body.original_filename = req.files.audio_file[0].originalname;
@@ -81,16 +88,12 @@ const create = (req, res) => {
     }
     Audiofile.create(req.body)
         .then((audiofile) => {
-            console.warn('titi')
             createAudioGender(audiofile, req.body.genders, (err, genders) => {
-                console.warn(err)
                 if (err) {
                     return res.status(500).json({message: 'audiofile_created_genders_error'});
                 }
-                console.warn('toot')
                 audiofile.genders = genders;
-                console.warn(audiofile);
-                return res.status(201).send({message : 'audiofile_created_success', audiofile, genders})
+                return res.status(201).send({message : 'audiofile_created_success', audiofile})
             })
         })
         .catch((error) => {
@@ -99,7 +102,6 @@ const create = (req, res) => {
 };
 
 const view = (req, res) => {
-    console.warn('view');
     Audiofile.find({
             id: req.params.id,
             include: [{
@@ -167,6 +169,23 @@ const stream = (req, res) => {
     }
 }
 
+const myuploads = (req, res) => {
+     var opts = {
+        where: [{ id_user : req.decoded }]
+    }
+    if (req.query.limit && req.query.offset) {
+        opts.limit = parseInt(req.query.limit, 10);
+        opts.offset = parseInt(req.query.offset, 10);;
+    }
+    Audiofile.findAll(opts)
+    .then((audiofiles) => {
+        res.status(200).send({message :'audiofile_myuploads_success', audiofiles})
+    })
+    .catch((error) => {
+        res.status(500).send({message :'audiofile_myuploads_error'}).end();
+    })
+}
+
 const viewComments = (req, res) => {
      var opts = {
         where: {
@@ -205,11 +224,9 @@ const createComment = (req, res) => {
     Comment.create(req.body)
     .then((createdComment) => {
         Email.send({}, (err) => {
-            console.warn('email, sent')
+            return res.status(201).send({message : 'comment_created_success', comment : createdComment}).end();
         })
-        return res.status(201).send({message : 'comment_created_success', comment : createdComment}).end();
     }).catch((error) => {
-        console.warn(error)
         res.status(500).send({message : 'comment_created_error'}).end();
     })
 }
@@ -223,7 +240,6 @@ const updateComment = (req, res) => {
         res.status(200).json({message : 'comment_updated_success', comment : updatedComment});
     })
     .catch(function(error) {
-        console.warn(error);
         res.status(500).json({message : 'comment_updated_error'});
     });
 }
@@ -242,21 +258,6 @@ const deleteComment = (req, res) => {
     });
 }
 const metadata = (req, res) => {
-    // console.warn(req.files);
-    // console.warn(req.file);
-    // jsmediatags
-    // .setTagsToRead(["title", "artist"])
-    // .read(req.file.buffer, {
-    //     onSuccess: function(tag) {
-    //         console.log(tag);
-    //         console.log(tag.type);
-    //         console.log(tag.tags.TXXX);
-    //     },
-    //     onError: function(error) {
-    //         console.log(':(', error.type, error.info);
-    //     }
-    // });
-
     var parser = mm(bufferToStream(req.file.buffer), function (err, metadata) {
         if (err) return res.status(500).send(err).end()
         console.log(metadata);
@@ -276,5 +277,6 @@ module.exports = {
     viewComment,
     updateComment,
     deleteComment,
+    myuploads,
     metadata
 }

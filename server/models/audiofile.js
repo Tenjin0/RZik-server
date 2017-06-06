@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         classMethods: {
             associate: function(models) {
-                // Audiofile.belongsTo(models.User);
+                Audiofile.belongsTo(models.User, {foreignKey: 'id_user'});
                 // associations can be defined here
             }
         }
