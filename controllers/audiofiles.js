@@ -1,9 +1,9 @@
 'use strict';
-
-const Audiofile = require('../models/').Audiofile;
-const AudioGenders = require('../models/').AudioGenders;
-const Gender = require('../models/').Gender;
-const Comment = require('../models/').Comment;
+const model = require('../server/models/');
+const Audiofile = model.Audiofile;
+const AudioGenders = model.AudioGenders;
+const Gender = model.Gender;
+const Comment = model.Comment;
 const Email = require('../helpers/mailer');
 const config = require('../config.js');
 const fse = require('fs-extra');

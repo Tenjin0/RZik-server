@@ -31,5 +31,5 @@ function send_token(res, user){
     res.clearCookie('jwtToken');
     let token = verify.getToken(user);
     res.cookie('jwtToken', token, {maxAge: 900000, httpOnly: true});
-    res.json(user);
+    res.send({user, token}).end();
 }

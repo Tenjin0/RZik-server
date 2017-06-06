@@ -7,11 +7,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const index = require('./routes/index');
-const users = require('./routes/users');
+const users = require('./routes/user');
 const audiofiles = require('./routes/audiofiles');
 const genders = require('./routes/genders');
 const test = require('./routes/test');
-
+const verify = require('./middlewares/verify');
 const app = express();
 var passport = require('passport');
 
@@ -49,13 +49,14 @@ require('./server/config/passport/passport.js')(passport, models.User);
 //Routes
 require('./routes/auth.js')(app);
 
-app.get('/', function(req, res) {
-  res.send('Welcome to Passport with Sequelize');
-});
+// app.get('/', function(req, res) {
+//   res.send('Welcome to Passport with Sequelize');
+// });
 
-app.use('/users', users);
-app.use('/api/*', function(req, res, next) {
-    // console.warn(req.body);
+app.use('/api/*', verify.verifyUser, function(req, res, next) {
+    console.warn(req.body);
+    console.warn(req.decoded);
+
     next();
 });
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const Gender = require('../models/').Gender;
+const Gender = require('../server/models/').Gender;
 
 const index = (req, res) => {
     Gender.findAll().

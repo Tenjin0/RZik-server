@@ -3,7 +3,7 @@ const router = express.Router();
 const audioController = require('../controllers/audiofiles');
 const UPLOAD_PATH = require('../config.js').UPLOAD_PATH;
 const multer = require('multer');
-const Audiofile = require('../models/').Audiofile;
+const Audiofile = require('../server/models/').Audiofile;
 
 const audioFilter = function(req, file, cb) {
     // accept image only

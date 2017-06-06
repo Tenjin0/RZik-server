@@ -1,5 +1,5 @@
 var jwt = require('jsonwebtoken');
-var config = require('../server/config/config.json');
+var config = require('../server/config/config.js');
 
 exports.getToken = function(user) {
 	return jwt.sign(user.id, config.secretKey);
