@@ -5,7 +5,6 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const models = require('./models/');
 
 const index = require('./routes/index');
 const users = require('./routes/users');
@@ -14,12 +13,12 @@ const genders = require('./routes/genders');
 const test = require('./routes/test');
 
 const app = express();
+var passport = require('passport');
 
+// var Models
+var models = require("./server/models");
 
-const multer = require('multer');
-
-// const UPLOAD_PATH = 'uploads';
-// const upload = multer({ dest: `${UPLOAD_PATH}/` }) // multer configuration
+// var Routes
 
 app.use(cors());
 app.use(logger('dev'));
@@ -27,37 +26,40 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// app.post('/profile', upload.single('cover'), (req, res) => {
-//     console.warn(req.body);
-//     console.warn(req.file);
-
-//     res.status(200).send().end();
-//     // try {
-//     //     const col = await loadCollection(COLLECTION_NAME, db);
-//     //     const data = col.insert(req.file);
-
-//     //     db.saveDatabase();
-//     //     res.send({ id: data.$loki, fileName: data.filename, originalName: data.originalname });
-//     // } catch (err) {
-//     //     res.sendStatus(400);
-//     // }
-// })
-// app.use((req, res, next) => {
-//     console.warn(req.body);
-//     next();
-// });
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(cookieParser());
 // TODO check authentification
+
+var env = require('dotenv').load();
+//Sync Database
+// models.sequelize.sync().then(function() {
+//   console.log('Nice! Database looks fine')
+// }).catch(function(err) {
+//   console.log(err, "Something went wrong with the Database Update!")
+// });
+
+// passport init
+app.use(passport.initialize());
+
+//load passport strategies
+require('./server/config/passport/passport.js')(passport, models.User);
+
+//Routes
+require('./routes/auth.js')(app);
+
+app.get('/', function(req, res) {
+  res.send('Welcome to Passport with Sequelize');
+});
+
+app.use('/users', users);
 app.use('/api/*', function(req, res, next) {
     // console.warn(req.body);
     next();
 });
 
-
-app.get('/', index);
+// app.get('/', index);
 
 app.use('/api/users', users);
 app.use('/api/test', test);
@@ -80,7 +82,6 @@ app.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-    console.warn(err);
     // render the error page
     res.status(err.status || 500);
     res.json({ message: 'error' });

@@ -1,12 +1,13 @@
 {
-  "name": "myapp",
+  "name": "nouveau-dossier",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "~1.15.2",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "~1.17.1",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.3",
     "debug": "~2.2.0",
@@ -21,6 +22,14 @@
     "pug": "~2.0.0-beta6",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.7.0",
-    "serve-favicon": "~2.3.0"
+    "serve-favicon": "~2.3.0",
+    "dotenv": "^4.0.0",
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.15.3",
+    "jade": "~1.11.0",
+    "jsonwebtoken": "^7.4.1",
+    "passport": "^0.3.2",
+    "passport-jwt": "^2.2.1",
+    "passport-local": "^1.0.0"
   }
 }
