@@ -10,7 +10,9 @@ const index = require('./routes/index');
 const users = require('./routes/user');
 const audiofiles = require('./routes/audiofiles');
 const genders = require('./routes/genders');
+const playlist = require('./routes/playlist');
 const test = require('./routes/test');
+
 const verify = require('./middlewares/verify');
 const app = express();
 var passport = require('passport');
@@ -64,6 +66,7 @@ app.use('/api/*', verify.verifyUser, function(req, res, next) {
 app.use('/api/users', users);
 app.use('/api/test', test);
 app.use('/api/genders', genders);
+app.use('/api/playlist', playlist);
 app.use('/api/audiofiles', function(req, res, next) {
         console.warn('audiofiles', req.body);
         next();

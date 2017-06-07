@@ -54,7 +54,7 @@ const index = (req, res)  => {
     }
     if (req.query.limit && req.query.offset) {
         opts.limit = parseInt(req.query.limit, 10);
-        opts.offset = parseInt(req.query.offset, 10);;
+        opts.offset = parseInt(req.query.offset, 10);
     }
     Audiofile.findAll(opts)
         .then((audiofiles) => {

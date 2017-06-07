@@ -6,7 +6,7 @@ exports.getToken = function(user) {
 };
 
 exports.verifyUser = function(req, res, next) {
-	var token = req.body.token || req.query.token || req.cookies['jwtToken'];
+	var token = req.body.token || req.query.token || req.cookies['jwtToken'] || req.headers['x-access-token'];
 	if (token) {
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
