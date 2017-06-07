@@ -55,11 +55,11 @@ require('./routes/auth.js')(app);
 //   res.send('Welcome to Passport with Sequelize');
 // });
 
-app.use('/api/*', verify.verifyUser, function(req, res, next) {
+/*app.use('/api/!*', verify.verifyUser, function(req, res, next) {
     console.warn(req.decoded);
 
     next();
-});
+});*/
 
 // app.get('/', index);
 

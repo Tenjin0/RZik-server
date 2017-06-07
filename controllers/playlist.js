@@ -1,7 +1,5 @@
 'use strict';
-const model = require('../server/models/');
-const Playlist = model.Playlist;
-const Audiofile = model.Audiofile;
+const {Playlist, Audiofile, PlaylistAudiofile} = require('../server/models/');
 const config = require('../config.js');
 
 
@@ -28,22 +26,22 @@ const index = (req, res) => {
 
 const create = (req, res) => {
   console.warn('create playlist');
-  if (!req.body.genders) {
-    req.body.genders = [];
-  }
+  req.body.id_user = req.decoded;
   Playlist.create(req.body)
-    .then((audiofile) => {
-      console.warn('titi');
-      createAudioGender(audiofile, req.body.genders, (err, genders) => {
-        console.warn(err);
-        if (err) {
-          return res.status(500).json({message: 'audiofile_created_genders_error'});
-        }
-        console.warn('toot');
-        audiofile.genders = genders;
-        console.warn(audiofile);
-        return res.status(201).send({message : 'audiofile_created_success', audiofile, genders})
-      })
+    .then((playlist) => {
+      return res.status(200).send({message : 'playlist_created_success', playlist})
+    })
+    .catch((error) => {
+      res.status(500).json(error);
+    })
+};
+
+
+const addSongs = (req, res) => {
+  console.warn('add songs to playlist');
+  PlaylistAudiofile.create(req.body)
+    .then((playlistAudiofile) => {
+      return res.status(200).send({message : 'playlist_audiofile_added_success', playlistAudiofile})
     })
     .catch((error) => {
       res.status(500).json(error);
@@ -53,5 +51,6 @@ const create = (req, res) => {
 
 module.exports = {
   index,
-  create
+  create,
+  addSongs
 };

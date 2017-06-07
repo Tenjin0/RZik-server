@@ -20,11 +20,9 @@ module.exports = function(sequelize, Sequelize) {
 		classMethods: {
           associate: function(models) {
             // associations can be defined here
-            models.User.belongsTo(models.User, {
-              through: 'User',
+            models.Playlist.belongsTo(models.User, {
               foreignKey: 'id_user'
             });
-
           }
 		}
 	});
