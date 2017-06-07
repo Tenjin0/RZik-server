@@ -1,10 +1,10 @@
 var config = {
   "development": {
     "username": "root",
-    "database": "rzik-dev",
+    "database": process.env.MYSQL_DATABASE || "rzik-dev",
     "password": process.env.MYSQL_PASS || "pass",
     "host": process.env.MYSQL_HOST || "127.0.0.1",
-	  "port": 3306,
+    "port": 3306,
     "dialect": "mysql"
   },
   "test": {
