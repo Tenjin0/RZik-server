@@ -10,6 +10,7 @@ exports.signup = function (req, res, next) {
 };
 
 exports.signin = function (req, res, next) {
+    console.log("hey 1");
     passport.authenticate('local-signin', (err, user, info) => {
         if(!has_error(res, err, info))
             send_token(res, user)

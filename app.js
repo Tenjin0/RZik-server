@@ -33,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var env = require('dotenv').load();
 //Sync Database
-models.sequelize.sync().then(function() {
+models.sequelize.sync({force:true, logging:console.log, alter: true}).then(function() {
   console.log('Nice! Database looks fine')
 }).catch(function(err) {
   console.log(err, "Something went wrong with the Database Update!")
@@ -43,7 +43,7 @@ models.sequelize.sync().then(function() {
 app.use(passport.initialize());
 
 //load passport strategies
-require('./server/config/passport/passport.js')(passport, models.User);
+require('./server/config/passport/passport.js')(passport, models);
 
 //Routes
 require('./routes/auth.js')(app);

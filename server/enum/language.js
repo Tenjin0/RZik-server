@@ -1,0 +1,17 @@
+'use strict';
+
+var language = {
+    USER_EDIT_SUCCESS : 100,
+    USER_EDIT_FAIL : 101,
+    AUTH_EMAIL_EXIST : 102,
+    SIGNUP_UNKNOWN_ERROR : 103,
+    AUTH_WRONG_PASSWORD : 104,
+    USER_LIST_SUCCESS : 105,
+    USER_LIST_FAIL : 106,
+    USER_FIND_ERROR : 107,
+    USER_FINDBYID_ERROR : 108,
+    USER_FINDBYNAME_ERROR : 109,
+    AUTH_EMAIL_NOT_EXIST : 110
+};
+
+module.exports = language;

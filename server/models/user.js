@@ -32,9 +32,16 @@ module.exports = function(sequelize, Sequelize) {
 	  birth_date: Sequelize.DATEONLY,
 	  last_login: {
 		  type: Sequelize.DATE,
-		  defaultValue: function() {
-			  return new Date()
-		  }
+		  defaultValue: Sequelize.NOW
+	  },
+	  activated: {
+		  type: Sequelize.BOOLEAN,
+		  defaultValue: false,
+		  allowNull: false
+	  },
+	  deleted: {
+		  type: Sequelize.DATE,
+		  defaultValue: null
 	  }
   }, {
 	  	tableName: 'user',

@@ -1,10 +1,12 @@
 var bCrypt = require('bcrypt-nodejs');
 var config = require('../config.json');
-var language = require('../../../server/enum/enumerators');
+var language = require('../../enum/language');
+var role = require('../../enum/role');
 
-module.exports = function(passport, user) {
+module.exports = function(passport, models) {
 
-    let User = user;
+    let User = models.User;
+    let User_Role = models.User_Role;
     let LocalStrategy = require('passport-local').Strategy;
 
     passport.use('local-signup', new LocalStrategy(
@@ -25,10 +27,9 @@ module.exports = function(passport, user) {
             }).then(function(user) {
                 if (user)
                 {
-                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
+                    errors.message = language.AUTH_EMAIL_EXIST;
                     return done(null, false, errors);
-                } else
-                {
+                } else {
                     let userPassword = generateHash(password);
                     let data =
                     {
@@ -43,9 +44,18 @@ module.exports = function(passport, user) {
                         if (!newUser) {
                             errors.message = language.SIGNUP_UNKNOWN_ERROR;
                             return done(null, false, errors);
-                        }
-                        if (newUser) {
-                            return done(null, newUser, errors);
+                        } else {
+                            User_Role.create({
+                                id_user: newUser.id,
+                                id_role: role.USER
+                            }).then(function (newRole, created) {
+                                if(!newRole){
+                                    errors.message = language.SIGNUP_UNKNOWN_ERROR;
+                                    return done(null, false, errors);
+                                } else {
+                                    return done(null, newUser, errors);
+                                }
+                            });
                         }
                     });
                 }
@@ -62,10 +72,11 @@ module.exports = function(passport, user) {
         },
         function(req, email, password, done) {
             let errors = {};
-            var User = user;
+
             var isValidPassword = function(userpass, password) {
                 return bCrypt.compareSync(password, userpass);
             };
+
             User.findOne({
                 where: {
                     email: email
