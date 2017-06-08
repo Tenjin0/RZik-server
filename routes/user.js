@@ -2,31 +2,27 @@ var express = require('express');
 var router = express.Router();
 var user = require('../controllers/usercontroller.js');
 var verify = require('../middlewares/verify');
+var role = require('../server/enum/role');
+
+//test
+router.get('/test', verify.verifyRole([role.USER]), user.test);
 
 //Modifier
-router.put('/:id', verify.verifyRole, user.edit);
-
-/**
- * 
- * L'admin et l'utilisteur ont access a des fonctionnalités de désactivation de compte et suppression
- * 
- * 
- */
-
-//router.put('/disable/', verifyRole, user.disable);
+router.put('/', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.edit);
 
 //Lister
-router.get('/all', verify.verifyRole, user.list);
+router.get('/all', verify.verifyRole([role.ADMINISTRATOR]), user.list);
 
 //Recherche par id
-router.get('/:id', verify.verifyRole, user.findById);
+router.get('/:id', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.findById);
 
 //Recherche par nom
-router.get('/name/:name', verify.verifyRole, user.findByName);
+router.get('/name/:name', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.findByName);
 
 //Activer / Desactiver compte
-router.put('/:status', verify.verifyRole, user.status);
+router.put('/:activate', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.activate);
 
-router.get('/:test', verify.verifyRole, user.test);
+//Suppression compte !! définitive
+router.delete('/:id', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.delete);
 
 module.exports = router;

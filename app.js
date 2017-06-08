@@ -7,6 +7,7 @@ var passport = require('passport');
 var session  = require('express-session');
 var exphbs = require('express-handlebars');
 var cookieParser = require('cookie-parser');
+var verify = require('./middlewares/verify');
 
 // var Models
 var models = require("./server/models");
@@ -33,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var env = require('dotenv').load();
 //Sync Database
-models.sequelize.sync({force:true, logging:console.log, alter: true}).then(function() {
+models.sequelize.sync({logging:console.log, alter: true}).then(function() {
   console.log('Nice! Database looks fine')
 }).catch(function(err) {
   console.log(err, "Something went wrong with the Database Update!")
@@ -51,7 +52,9 @@ require('./routes/auth.js')(app);
 app.get('/', function(req, res) {
   res.send('Welcome to Passport with Sequelize');
 });
-app.use('/users', users);
+
+// add middleware
+app.use('/users', verify.verifyUser, users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

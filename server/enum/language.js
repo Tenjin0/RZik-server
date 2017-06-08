@@ -11,7 +11,8 @@ var language = {
     USER_FIND_ERROR : 107,
     USER_FINDBYID_ERROR : 108,
     USER_FINDBYNAME_ERROR : 109,
-    AUTH_EMAIL_NOT_EXIST : 110
+    AUTH_EMAIL_NOT_EXIST : 110,
+    RIGHT_NOT_ALLOWED : 11
 };
 
 module.exports = language;

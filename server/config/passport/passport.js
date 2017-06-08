@@ -76,19 +76,18 @@ module.exports = function(passport, models) {
             var isValidPassword = function(userpass, password) {
                 return bCrypt.compareSync(password, userpass);
             };
-
             User.findOne({
                 where: {
                     email: email
                 }
             }).then(function(user) {
                 if (!user) {
-                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
+                    errors.message = {signin: "AUTH_EMAIL_NOT_EXIST"};
                     return done(null, false, errors);
                 }
 
                 if (!isValidPassword(user.password, password)) {
-                    errors.message = language.AUTH_WRONG_PASSWORD;
+                    errors.message = {signin: "AUTH_WRONG_PASSWORD"};
                     return done(null, false, errors);
                 }
                 var currenttime = new Date();
@@ -99,6 +98,7 @@ module.exports = function(passport, models) {
                 });
                 return done(null, user.get(), errors);
             }).catch(function(err) {
+                console.log(err);
                 return done(err);
             });
         }

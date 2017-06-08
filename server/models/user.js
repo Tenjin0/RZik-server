@@ -17,7 +17,8 @@ module.exports = function(sequelize, Sequelize) {
 	  },
 	  nickname: {
 		  type: Sequelize.STRING,
-		  notEmpty: true
+		  notEmpty: true,
+		  unique: true
 	  },
 	  password: {
 		  type: Sequelize.STRING,
@@ -25,6 +26,7 @@ module.exports = function(sequelize, Sequelize) {
 	  },
 	  email: {
 		  type: Sequelize.STRING,
+		  unique: true,
 		  validate: {
 			  isEmail: true
 		  }
@@ -34,6 +36,7 @@ module.exports = function(sequelize, Sequelize) {
 		  type: Sequelize.DATE,
 		  defaultValue: Sequelize.NOW
 	  },
+	  //activate when user confirm email !! add activation verification in verifyUser
 	  activated: {
 		  type: Sequelize.BOOLEAN,
 		  defaultValue: false,

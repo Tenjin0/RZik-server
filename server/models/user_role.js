@@ -10,17 +10,16 @@ module.exports = function(sequelize, DataTypes) {
         classMethods: {
             associate: function(models) {
                 // associations can be defined here
-                models.Role.belongsToMany(models.User, {
-                    //timestamps: false,
-                    through: 'User_Role',
-                    foreignKey: 'id_role',
-                    onDelete: 'cascade',
-                    defaultValue: 2
-                });
                 models.User.belongsToMany(models.Role, {
                     //timestamps: false,
                     through: 'User_Role',
                     foreignKey: 'id_user',
+                    onDelete: 'cascade'
+                });
+                models.Role.belongsToMany(models.User, {
+                    //timestamps: false,
+                    through: 'User_Role',
+                    foreignKey: 'id_role',
                     onDelete: 'cascade'
                 });
 

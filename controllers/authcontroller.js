@@ -10,7 +10,6 @@ exports.signup = function (req, res, next) {
 };
 
 exports.signin = function (req, res, next) {
-    console.log("hey 1");
     passport.authenticate('local-signin', (err, user, info) => {
         if(!has_error(res, err, info))
             send_token(res, user)
@@ -28,9 +27,11 @@ function has_error(res, err, info){
     }
 }
 function send_token(res, user){
-    user.password = undefined;
-    res.clearCookie('jwtToken');
+    res.clearCookie('token');
     let token = verify.getToken(user);
-    res.cookie('jwtToken', token, {maxAge: 900000, httpOnly: true});
+    user.token = token;
+    user.password = undefined;
+    user.id = undefined;
+    res.cookie('token', token, {maxAge: 900000, httpOnly: true});
     res.json(user);
 }
