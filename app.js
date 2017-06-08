@@ -51,13 +51,7 @@ require('./server/config/passport/passport.js')(passport, models.User);
 //Routes
 require('./routes/auth.js')(app);
 
-// app.get('/', function(req, res) {
-//   res.send('Welcome to Passport with Sequelize');
-// });
-
 app.use('/api/*', verify.verifyUser, function(req, res, next) {
-    next();
-});
 
 // app.get('/', index);
 
