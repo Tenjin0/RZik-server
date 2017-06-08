@@ -52,7 +52,8 @@ require('./server/config/passport/passport.js')(passport, models.User);
 require('./routes/auth.js')(app);
 
 app.use('/api/*', verify.verifyUser, function(req, res, next) {
-
+    next();
+})
 // app.get('/', index);
 
 app.use('/api/users', users);
