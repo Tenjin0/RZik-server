@@ -21,7 +21,7 @@ function bufferToStream(buffer) {
 
 var createAudioGender = (audiofile,idGenders, callback) => {
         if (typeof idGenders === 'string') {
-            idGenders = JSON.parse(idGenders);
+            idGenders = idGenders.split(",");
         }
         var genders = [];
         var count = 0;
@@ -72,7 +72,7 @@ const index = (req, res)  => {
 };
 
 const create = (req, res) => {
-    if (!req.body.genders) {
+    if (!req.body.genders || req.body.genders === 'null') {
         req.body.genders = [];
     }
     if (req.decoded) {
@@ -81,10 +81,27 @@ const create = (req, res) => {
     if (req.files && req.files.audio_file) {
         req.body.original_filename = req.files.audio_file[0].originalname;
         req.body.new_filename = req.files.audio_file[0].filename;
-        req.body.mimetype = req.files.audio_file[0].mimetype;
+        req.body.audio_mimetype = req.files.audio_file[0].mimetype;
     }
     if (req.files && req.files.cover) {
-        req.body.cover = req.files.audio_file[0].filename;
+        req.body.cover_mimetype = req.files.cover[0].mimetype;
+        req.body.cover = req.files.cover[0].filename;
+    }
+    if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
+        if (req.body.explicit_content === 'on') {
+            req.body.explicit_content = true;
+        } else {
+            req.body.explicit_content = false;
+
+        }
+    }
+    if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
+        if (req.body.download_authorization === 'on') {
+            req.body.download_authorization = true;
+        } else {
+            req.body.download_authorization = false;
+
+        }
     }
     Audiofile.create(req.body)
         .then((audiofile) => {
@@ -97,6 +114,7 @@ const create = (req, res) => {
             })
         })
         .catch((error) => {
+            console.warn(error)
             res.status(500).json(error);
         })
 };
@@ -219,6 +237,7 @@ const viewComment = (req, res) => {
         res.status(500).send(error).end()
     })
 }
+
 const createComment = (req, res) => {
     req.body.id_audiofile = req.params.id;
     Comment.create(req.body)
@@ -230,6 +249,7 @@ const createComment = (req, res) => {
         res.status(500).send({message : 'comment_created_error'}).end();
     })
 }
+
 const updateComment = (req, res) => {
     Comment.update(req.body, {
         where: {
@@ -264,6 +284,30 @@ const metadata = (req, res) => {
         return res.status(200).send({data : metadata}).end()
     });
 }
+const cover = (req, res) => {
+        Audiofile.findById(req.params.id)
+        .then((audiofile) => {
+            console.warn(config.UPLOAD_PATH + '/' + audiofile.cover);
+            // res.header('Content-Type', 'image/jpeg');
+            // res.sendFile(config.UPLOAD_PATH + '/' + audiofile.cover);
+            // fse.createReadStream(config.UPLOAD_PATH + '/' + '0bb22c8e65a91d92f62779d502d9aa9e').pipe(res)
+            fse.readFile(config.UPLOAD_PATH + '/' + audiofile.cover, function (err, content) {
+                if (err) {
+                    res.writeHead(400, {'Content-type':'text/html'})
+                    console.log(err);
+                    res.end("No such image");    
+                } else {
+                    //specify the content type in the response will be an image
+                    res.writeHead(200,{'Content-type':audiofile.cover_mimetype});
+                    res.end(content);
+                }
+    });
+        })
+        .catch((error) => {
+            console.warn(error)
+            res.status(500).end()
+        })
+}
 
 module.exports = {
     index,
@@ -278,5 +322,6 @@ module.exports = {
     updateComment,
     deleteComment,
     myuploads,
-    metadata
+    metadata,
+    cover
 }

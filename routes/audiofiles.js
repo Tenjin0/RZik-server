@@ -30,6 +30,7 @@ router.post('/', upload.fields([
     next();
 }, audioController.create);
 router.get('/:id', audioController.view);
+router.get('/:id/cover', audioController.cover);
 router.put('/:id', audioController.update);
 router.delete('/:id', audioController.delete);
 router.get('/:id/stream', audioController.stream);

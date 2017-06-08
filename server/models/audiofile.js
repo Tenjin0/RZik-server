@@ -4,12 +4,13 @@ module.exports = function(sequelize, DataTypes) {
     var Audiofile = sequelize.define('Audiofile', {
         title: DataTypes.STRING,
         description: DataTypes.STRING,
-        cover: DataTypes.STRING,
         artist: DataTypes.STRING,
         composer: DataTypes.STRING,
         original_filename: DataTypes.STRING,
         new_filename: DataTypes.STRING,
-        mimetype: DataTypes.STRING,
+        audio_mimetype: DataTypes.STRING,
+        cover: DataTypes.STRING,
+        cover_mimetype: DataTypes.STRING,
         explicit_content: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
