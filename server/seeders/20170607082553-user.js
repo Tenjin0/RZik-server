@@ -27,6 +27,10 @@ module.exports = {
         id: 2, firstname: 'Patrice', lastname: 'Petit', nickname: 'Tenji',
         password: '$2a$08$YGVTzmyW9rMbisqGHARMPOcxabT2jRnZkfgDvps7LF03n1h8s/vaW', email: 'petitpatrice@gmail.com',
         birth_date: '1990-06-16',last_login: '2017-06-07 08:25:03', activated: false,deleted: null
+      },{
+        id: 3, firstname: 'Armen', lastname: 'Tildian', nickname: 'Tilarm',
+        password: '$2a$08$Zm6CmnLvcFo7fBTcfIsC2.nAYxuwIsBk0ektrpNWy9rMa7fAMrJ2i', email: 'tilarm@gmail.com',
+        birth_date: '1990-06-16',last_login: '2017-06-07 08:25:03', activated: true,deleted: null
       }]);
   },
 
