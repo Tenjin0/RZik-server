@@ -1,46 +1,106 @@
 var jwt = require('jsonwebtoken');
 var config = require('../server/config/config.js');
+var models  = require('../server/models');
+const util = require('util');
+var message = require('../server/enum/message');
 
 exports.getToken = function(user) {
 	return jwt.sign(user.id, config.secretKey);
 };
 
 exports.verifyUser = function(req, res, next) {
-	var token = req.body.token || req.query.token || req.cookies['jwtToken'] || req.headers['x-access-token'];
+	var token = req.cookies['token'];
 	if (token) {
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
-				res.status(401).json(err);
-			}
-			else {
-				console.warn('todo verify')
+				message.error({verify_user: err});
+				res.status(401).json(message.send());
+			} else {
 				req.decoded = decoded;
-				next();
+				new Promise(
+					function (resolve, reject) {
+						models.User.findOne({
+							where: {
+								id: req.decoded
+							}
+						}).then(function (user) {
+							resolve(user);
+						}).catch(function (err) {
+							reject(err)
+						})
+					}
+				).then(
+					function(user){
+						if(user) {
+							if(!user.activated){
+								message.error({verify_user: "user_not_activated"});
+								res.status(401).json(message.send());
+							}else if (user.deleted){
+								message.error({verify_user: "user_deleted"});
+								res.status(401).json(message.send());
+							}
+							next();
+						} else {
+							throw "error user is null"
+						}
+				}).catch(function (err){
+					message.error({verify_user: err});
+					res.status(401).json(message.send());
+				});
 			}
 		})
 	}
 	else {
-		res.status(401).json({message: "no token"});
+		message.error({verify_user: "no_token"});
+		res.status(401).json(message.send());
 	}
 };
 
-exports.verifyRole = function(requiredRole){
-	return function(req, res, next){
-		var cookies = cookie.parse(req.headers.cookie || '');
-		var token = cookies['x-access-token'] || req.headers['x-access-token'];
-		jwt.verify(token, config.secretKey, function(err, decoded) {
-			if(err) {
-				res.json(err);
+exports.verifyRole = function(whitelist){
+	return function(req, res, next) {
+		new Promise(
+			function (resolve, reject) {
+				models.User_Role.findAll({
+					where: {
+						id_user: req.decoded
+					}
+				}).then(function (user) {
+					resolve(user);
+				}).catch(function (err) {
+					reject(err);
+				});
 			}
-			else {
-				if(requiredRole.includes(decoded._doc.idRole)){
-					res.setHeader('Set-Cookie', cookie.serialize('x-access-token', token),{ maxAge: 60*60*24});
-					req.decoded = decoded;
-					next();
-				}else{
-					res.json({message: "not allowed to load this ressource"});	
+		).then(
+			function (user_role) {
+				let found = false;
+				let tot = user_role.length;
+				let i = 0;
+				let roles = [];
+
+				for(; i < tot;i++){
+					roles.push(user_role[i].id_role);
 				}
-			}
-		})
+
+				let tot_roles = whitelist.length;
+				let j = 0;
+
+				for(; j<tot_roles; j++){
+					if(roles.includes(whitelist[j])){
+						found = true;
+					}
+				}
+				if (found){
+					req.role = roles;
+					next();
+				} else {
+					message.error({verify_role: "access_not_allowed"});
+					res.status(401).json(message.send());
+				}
+			}).catch(
+				function (err) {
+					message.error({verify_role: err});
+					res.status(401).json(message.send());
+				}
+			)
 	}
 };

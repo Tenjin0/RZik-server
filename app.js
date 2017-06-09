@@ -36,25 +36,19 @@ app.use(cookieParser());
 
 var env = require('dotenv').load();
 //Sync Database
-// models.sequelize.sync().then(function() {
-//   console.log('Nice! Database looks fine')
-// }).catch(function(err) {
-//   console.log(err, "Something went wrong with the Database Update!")
-// });
 
 // passport init
 app.use(passport.initialize());
 
 //load passport strategies
-require('./server/config/passport/passport.js')(passport, models.User);
+require('./server/config/passport/passport.js')(passport, models);
 
 //Routes
 require('./routes/auth.js')(app);
-
-// app.use('/api/*', verify.verifyUser, function(req, res, next) {
-//     next();
-// })
-// app.get('/', index);
+app.use('/api/*', verify.verifyUser, function(req, res, next) {
+    next();
+});
+app.get('/', index);
 
 app.use('/api/users', users);
 app.use('/api/test', test);

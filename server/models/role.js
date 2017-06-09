@@ -9,6 +9,14 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         //Empty
+        /**
+         * anonyme = 1
+         * utilisateur = 2
+         * moderateur = 3
+         * proprietaire = 4
+         * administrateur = 5
+         *
+         */
       }
     }
   });

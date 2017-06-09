@@ -1,10 +1,13 @@
 var bCrypt = require('bcrypt-nodejs');
-var config = require('../config.js');
-var language = require('../../../server/enum/enumerators');
+var config = require('../config.json');
+var language = require('../../enum/language');
+var role = require('../../enum/role');
+var message = require('../../enum/message');
 
-module.exports = function(passport, user) {
+module.exports = function(passport, models) {
 
-    let User = user;
+    let User = models.User;
+    let User_Role = models.User_Role;
     let LocalStrategy = require('passport-local').Strategy;
 
     passport.use('local-signup', new LocalStrategy(
@@ -14,7 +17,6 @@ module.exports = function(passport, user) {
             passReqToCallback: true
         },
         function(req, email, password, done) {
-            let errors = {};
             let generateHash = function(password) {
                 return bCrypt.hashSync(password, bCrypt.genSaltSync(8), null);
             };
@@ -25,10 +27,9 @@ module.exports = function(passport, user) {
             }).then(function(user) {
                 if (user)
                 {
-                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
-                    return done(null, false, errors);
-                } else
-                {
+                    message.error({signup: "email_exist_already"});
+                    return done(null, false, message.send());
+                } else {
                     let userPassword = generateHash(password);
                     let data =
                     {
@@ -41,11 +42,20 @@ module.exports = function(passport, user) {
                     };
                     User.create(data).then(function(newUser, created) {
                         if (!newUser) {
-                            errors.message = language.SIGNUP_UNKNOWN_ERROR;
-                            return done(null, false, errors);
-                        }
-                        if (newUser) {
-                            return done(null, newUser, errors);
+                            message.error({signup: "user_not_returned"});
+                            return done(null, false, message.send());
+                        } else {
+                            User_Role.create({
+                                id_user: newUser.id,
+                                id_role: role.USER
+                            }).then(function (newRole, created) {
+                                if(!newRole){
+                                    message.error({signup: "role_not_added"});
+                                    return done(null, false, message.send());
+                                } else {
+                                    return done(null, newUser, message.send());
+                                }
+                            });
                         }
                     });
                 }
@@ -61,8 +71,6 @@ module.exports = function(passport, user) {
             passReqToCallback: true
         },
         function(req, email, password, done) {
-            let errors = {};
-            var User = user;
             var isValidPassword = function(userpass, password) {
                 return bCrypt.compareSync(password, userpass);
             };
@@ -72,21 +80,21 @@ module.exports = function(passport, user) {
                 }
             }).then(function(user) {
                 if (!user) {
-                    errors.message = language.AUTH_EMAIL_NOT_EXIST;
-                    return done(null, false, errors);
+                    message.error({signin: "wrong_email"});
+                    return done(null, false, message.send());
                 }
-
                 if (!isValidPassword(user.password, password)) {
-                    errors.message = language.AUTH_WRONG_PASSWORD;
-                    return done(null, false, errors);
+                    message.error({signin: "wrong_password"});
+                    return done(null, false, message.send());
                 }
+                
                 var currenttime = new Date();
                 user.update({last_login: currenttime},{
                     where: {
                         id: user.id
                     }
                 });
-                return done(null, user.get(), errors);
+                return done(null, user.get(), message.send());
             }).catch(function(err) {
                 return done(err);
             });

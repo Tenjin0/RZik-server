@@ -8,6 +8,6 @@ module.exports = function(app) {
    */
   app.post('/signup', authController.signup);
 
-    app.post('/signin', authController.signin);
+  app.post('/signin', authController.signin);
     
 };
