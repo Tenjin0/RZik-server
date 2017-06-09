@@ -18,7 +18,40 @@ function bufferToStream(buffer) {
     stream.push(null);
     return stream;
 }
+function checkReqBody(req) {
+    if (!req.body.genders || req.body.genders === 'null') {
+        req.body.genders = [];
+    }
+    if (req.decoded) {
+        req.body.id_user = req.decoded;
+    }
+    if (req.files && req.files.audio_file) {
+        req.body.original_filename = req.files.audio_file[0].originalname;
+        req.body.new_filename = req.files.audio_file[0].filename;
+        req.body.audio_mimetype = req.files.audio_file[0].mimetype;
+    }
+    if (req.files && req.files.cover) {
+        req.body.cover_mimetype = req.files.cover[0].mimetype;
+        req.body.cover = req.files.cover[0].filename;
+    }
+    if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
+        if (req.body.explicit_content === 'on') {
+            req.body.explicit_content = true;
+        } else {
+            req.body.explicit_content = false;
 
+        }
+    }
+    if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
+        if (req.body.download_authorization === 'on') {
+            req.body.download_authorization = true;
+        } else {
+            req.body.download_authorization = false;
+
+        }
+    }
+
+}
 var createAudioGender = (audiofile,idGenders, callback) => {
         if (typeof idGenders === 'string') {
             idGenders = idGenders.split(",");
@@ -28,7 +61,6 @@ var createAudioGender = (audiofile,idGenders, callback) => {
         if (idGenders && idGenders.length > 0) {
             for (var i = 0; i < idGenders.length; i++) {
                 Gender.findById(idGenders[i])
-                
                     .then((gender) => {
                         audiofile.addGender(gender);
                         genders.push(gender);
@@ -72,37 +104,7 @@ const index = (req, res)  => {
 };
 
 const create = (req, res) => {
-    if (!req.body.genders || req.body.genders === 'null') {
-        req.body.genders = [];
-    }
-    if (req.decoded) {
-        req.body.id_user = req.decoded;
-    }
-    if (req.files && req.files.audio_file) {
-        req.body.original_filename = req.files.audio_file[0].originalname;
-        req.body.new_filename = req.files.audio_file[0].filename;
-        req.body.audio_mimetype = req.files.audio_file[0].mimetype;
-    }
-    if (req.files && req.files.cover) {
-        req.body.cover_mimetype = req.files.cover[0].mimetype;
-        req.body.cover = req.files.cover[0].filename;
-    }
-    if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
-        if (req.body.explicit_content === 'on') {
-            req.body.explicit_content = true;
-        } else {
-            req.body.explicit_content = false;
-
-        }
-    }
-    if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
-        if (req.body.download_authorization === 'on') {
-            req.body.download_authorization = true;
-        } else {
-            req.body.download_authorization = false;
-
-        }
-    }
+    checkReqBody(req)
     Audiofile.create(req.body)
         .then((audiofile) => {
             createAudioGender(audiofile, req.body.genders, (err, genders) => {
@@ -120,8 +122,10 @@ const create = (req, res) => {
 };
 
 const view = (req, res) => {
-    Audiofile.find({
-            id: req.params.id,
+    console.warn(req.params.id);
+    
+    Audiofile.findById(req.params.id,{
+            attributes: ['id', 'title', 'description', 'artist', 'composer','duration', 'creation_date','explicit_content', 'download_authorization', 'id_user'],
             include: [{
                 model: Gender,
                 attributes: ['id', 'name']
@@ -136,10 +140,11 @@ const view = (req, res) => {
 };
 
 const update = (req, res)  => {
+    checkReqBody(req)
     Audiofile.findById(req.params.id)
         .then(function(audiofile) {
-            audiofile.save(req.body)
-            .then((audiofile) => {
+            audiofile.update(req.body)
+            .then((audiofileSaved) => {
                 AudioGenders.destroy({
                     where: {
                         id_audiofile: req.params.id
@@ -147,7 +152,7 @@ const update = (req, res)  => {
                 }).then((az) => {
                     createAudioGender(audiofile, req.body.genders, (err, genders) => {
                         audiofile.genders = genders;
-                        res.status(200).send(audiofile).end();
+                        res.status(200).send(audiofileSaved).end();
                     })
                 }).catch((error) => {
                     res.status(500).send(error).end();
@@ -175,14 +180,36 @@ const deleteAudio =(req, res) => {
         });
 };
 
-const stream = (req, res) => {
+const action = (req, res) => {
     if (req.params.id) {
         Audiofile.findById(req.params.id)
             .then((audiofile) => {
-                fse.createReadStream(config.UPLOAD_PATH + '/' + audiofile.new_filename).pipe(res);
+                const filePath = config.UPLOAD_PATH + '/' + audiofile.new_filename;
+                fse.stat(filePath, function(err, stats) {
+                    if (err) {
+                        response.statusCode = 500;
+                        return response.end();
+                    }
+                    if(req.params.action === 'download') {
+                        if (!audiofile.download_authorization){
+                            return res.status(401).end()
+                        }
+                        res.writeHead(200, {
+                            "Content-Type": audiofile.audio_mimetype,
+                            "Content-Disposition" : "attachment; filename=" + audiofile.original_filename,
+                            "Content-Length"      : stats.size,
+                        });
+                    } else {
+                        res.writeHead(200, {
+                            "Content-Type": audiofile.audio_mimetype,
+                            "Content-Length"      : stats.size,
+                        });
+                    }
+                    fse.createReadStream(filePath).pipe(res);
+                })
             })
             .catch((error) => {
-                res.status(500).send().end();
+                res.status(500).send({message : "audio_notfound"}).end();
             })
     }
 }
@@ -315,7 +342,7 @@ module.exports = {
     create,
     update,
     delete : deleteAudio,
-    stream,
+    action,
     createComment,
     viewComments,
     viewComment,

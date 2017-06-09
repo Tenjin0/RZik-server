@@ -31,9 +31,9 @@ router.post('/', upload.fields([
 }, audioController.create);
 router.get('/:id', audioController.view);
 router.get('/:id/cover', audioController.cover);
-router.put('/:id', audioController.update);
+router.put('/:id',upload.single('cover'),  audioController.update);
 router.delete('/:id', audioController.delete);
-router.get('/:id/stream', audioController.stream);
+router.get('/:id/:action(stream|download)', audioController.action);
 router.use('/:id/comments', (req, res, next) => {
     Audiofile.findById(req.params.id)
     .then((audiofile) => {

@@ -1,4 +1,5 @@
 'use strict';
+var moment = require('moment');
 
 module.exports = function(sequelize, DataTypes) {
     var Audiofile = sequelize.define('Audiofile', {
@@ -25,8 +26,22 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         genders: DataTypes.VIRTUAL,
-        creation_date: DataTypes.DATE,
-        duration: DataTypes.TIME
+        creation_date:{
+            type: DataTypes.DATEONLY,
+            get: function() {
+                return moment.utc(this.getDataValue('creation_date')).format('YYYY-MM-DD');
+            }
+        }, 
+        duration: DataTypes.TIME,
+        total_view : {
+            type : DataTypes.INTEGER,
+            defaultValue : 0
+        },
+        total_download : {
+            type : DataTypes.INTEGER,
+            defaultValue : 0
+        },
+
     }, {
         timestamps: false,
         underscored: true,
@@ -37,5 +52,6 @@ module.exports = function(sequelize, DataTypes) {
             }
         }
     });
+
     return Audiofile;
 };
