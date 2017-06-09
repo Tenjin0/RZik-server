@@ -1,6 +1,7 @@
 var exports = module.exports = {};
 var verify = require('../middlewares/verify');
 var passport = require('passport');
+var util = require('util');
 
 exports.signup = function (req, res, next) {
     passport.authenticate('local-signup', (err, user, info) => {
@@ -17,11 +18,7 @@ exports.signin = function (req, res, next) {
 };
 
 function has_error(res, err, info){
-    if (err){
-        res.status(401).json(err).end();
-        return true;
-    }
-    else if (info.message) {
+    if (err || info.hasOwnProperty("error")){
         res.status(401).json(info).end();
         return true;
     }

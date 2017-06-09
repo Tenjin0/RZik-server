@@ -17,7 +17,7 @@ var Users = {
         let id = req.body.id;
 
         if(!isAdmin && id != req.decoded){
-            message.error({update_users: "update_another_id_not_allowed"});
+            message.error({edit_users: "update_another_id_not_allowed"});
             res.status(401).json(message.send());
         } else {
             if(req.body.email || req.body.nickname) {
@@ -53,9 +53,9 @@ var Users = {
                                 }
                             }
                             if (found_email)
-                                message.error({update_users: "mail_exist_already"});
+                                message.error({edit_users: "mail_exist_already"});
                             if (found_nickname)
-                                message.error({update_users: "nickname_exist_already"});
+                                message.error({edit_users: "nickname_exist_already"});
 
                             if (found_email || found_nickname) {
                                 res.status(401).json(message.send());
@@ -97,10 +97,10 @@ var Users = {
                                     }
                                 ).then(
                                     function (user) {
-                                        message.success({update_users: "user_updated"});
+                                        message.success({edit_users: "user_updated"});
                                         res.json(message.send());
                                     }).catch(function (err) {
-                                    message.error({update_users: err});
+                                    message.error({edit_users: err});
                                     res.json(message.send());
                                 });
                             }
@@ -112,18 +112,6 @@ var Users = {
                 });
             }
         }
-    },
-    test : function(req, res){
-        console.log("getkaubyvalue : "+getKeyByValue(Users, this));
-        //message.error += {verify_user: "erreur1"};
-        //message.error += {verify_user: "erreur2"};
-        message.error({verify_user: "erreur1"});
-        message.error({verify_user: "erreur2"});
-
-        console.log(util.inspect(message.send(), false, true));
-        //console.log(message.send());
-        res.json(message.send());
-        res.end();
     },
     list : function (req, res) {
         new Promise(

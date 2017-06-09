@@ -4,9 +4,6 @@ var user = require('../controllers/usercontroller.js');
 var verify = require('../middlewares/verify');
 var role = require('../server/enum/role');
 
-//test
-router.get('/test', verify.verifyRole([role.USER]), user.test);
-
 //Modifier
 router.put('/', verify.verifyRole([role.USER, role.ADMINISTRATOR]), user.edit);
 
