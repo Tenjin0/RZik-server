@@ -1,5 +1,5 @@
 var bCrypt = require('bcrypt-nodejs');
-var config = require('../config.json');
+var config = require('../config.js');
 var language = require('../../enum/language');
 var role = require('../../enum/role');
 var message = require('../../enum/message');
