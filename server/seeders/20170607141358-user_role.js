@@ -12,7 +12,10 @@ module.exports = {
         isBetaMember: false
       }], {});
     */
-    return queryInterface.bulkInsert('user_role',[{id_user: 1, id_role: 2},{id_user: 1, id_role: 5}]);
+    return queryInterface.bulkInsert('user_role',[
+      {id_user: 1, id_role: 2},{id_user: 1, id_role: 5},
+      {id_user: 2, id_role: 2},{id_user: 2, id_role: 5}
+      ]);
   },
 
   down: function (queryInterface, Sequelize) {
