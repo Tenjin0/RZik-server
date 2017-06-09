@@ -7,7 +7,9 @@ var role = require('../server/enum/role');
 const util = require('util');
 var message = require('../server/enum/message');
 //let message = {error:{},success:{}};
-
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+}
 var Users = {
     edit: function (req, res) {
         message.init();
@@ -17,7 +19,6 @@ var Users = {
         if(!isAdmin && id != req.decoded){
             message.error({update_users: "update_another_id_not_allowed"});
             res.status(401).json(message.send());
-            res.end();
         } else {
             if(req.body.email || req.body.nickname) {
                 new Promise(
@@ -58,7 +59,6 @@ var Users = {
 
                             if (found_email || found_nickname) {
                                 res.status(401).json(message.send());
-                                res.end();
                             } else {
                                 //update
                                 let user_client = {
@@ -99,11 +99,9 @@ var Users = {
                                     function (user) {
                                         message.success({update_users: "user_updated"});
                                         res.json(message.send());
-                                        res.end();
                                     }).catch(function (err) {
                                     message.error({update_users: err});
                                     res.json(message.send());
-                                    res.end();
                                 });
                             }
                         }
@@ -111,16 +109,21 @@ var Users = {
                 ).catch(function (err) {
                     message.error({err: err});
                     res.status(401).json(message.send());
-                    res.end();
                 });
             }
         }
     },
     test : function(req, res){
-        message.error({test:"value"});
+        console.log("getkaubyvalue : "+getKeyByValue(Users, this));
+        //message.error += {verify_user: "erreur1"};
+        //message.error += {verify_user: "erreur2"};
+        message.error({verify_user: "erreur1"});
+        message.error({verify_user: "erreur2"});
+
         console.log(util.inspect(message.send(), false, true));
-        console.log(message.send());
-        res.send();
+        //console.log(message.send());
+        res.json(message.send());
+        res.end();
     },
     list : function (req, res) {
         new Promise(
@@ -137,8 +140,8 @@ var Users = {
                 res.json(user);
             }).catch(
             function(err) {
-                message.error = {list_users: err};
-                res.json(message);
+                message.error({list_users: err});
+                res.json(message.send());
             }
         );
     },
@@ -159,14 +162,17 @@ var Users = {
             }
         ).then(
             function (user) {
-                res.json(user);
-                res.end();
+                 if(user) {
+                     res.json(user);
+                 } else {
+                     message.error({findById_users: "user_not_found"});
+                     res.status(401).json(message.send());
+                 }
             }
         ).catch(
             function (err) {
-                message.error = {findById_users: err};
-                res.status(401).json(err);
-                res.end();
+                message.error({findById_users: err});
+                res.status(401).json(message.send());
             }
         )
 
@@ -195,8 +201,8 @@ var Users = {
             function (user) {
                 res.json(user);
             }.catch(function (err){
-                message.error = {findByName_users: err};
-                res.status(401).json(message);
+                message.error({findByName_users: err});
+                res.status(401).json(message.send());
             })
         )
     },
@@ -204,9 +210,8 @@ var Users = {
         let status = req.params.status;
         let id = null;
         if(typeof status != boolean){
-            message.error = {activate_users: "activate_should_be_boolean"};
-            res.status(401).json(message);
-            res.end();
+            message.error({activate_users: "activate_should_be_boolean"});
+            res.status(401).json(message.send());
         }
 
         if(req.role.includes(role.ADMINISTRATOR)){
@@ -231,11 +236,11 @@ var Users = {
             }
         ).then(
             function (user) {
-                message.success = {activate_users: "status_updated"};
-                res.json(message)
+                message.success({activate_users: "status_updated"});
+                res.json(message.send())
             }).catch(function (err){
-            message.error = {activate_users: err};
-            res.status(401).json(message);
+            message.error({activate_users: err});
+            res.status(401).json(message.send());
         })
     },
     delete : function (req, res) {
@@ -250,10 +255,11 @@ var Users = {
                 })
             }
         ).then(function (user){
-            res.json(message.succes.push({delete_users: "deleted_user"}))
+            message.success({delete_users: "deleted_user"});
+            res.json(message.send());
         }).catch(function (err) {
-            message.error = {delete_users: err};
-            res.status(401).json(message);
+            message.error({delete_users: err});
+            res.status(401).json(message.send());
         })
     }
 };

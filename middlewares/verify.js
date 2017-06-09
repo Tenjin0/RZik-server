@@ -2,7 +2,7 @@ var jwt = require('jsonwebtoken');
 var config = require('../server/config/config.json');
 var models  = require('../server/models');
 const util = require('util');
-let message = {error:{},success:{}};
+var message = require('../server/enum/message');
 
 //module de validation dans le middleware - renomer verifyRole en control ?
 
@@ -15,9 +15,8 @@ exports.verifyUser = function(req, res, next) {
 	if (token) {
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
-				message.error = {verify_user: err};
-				res.status(401).json();
-				end();
+				message.error({verify_user: err});
+				res.status(401).json(message.send());
 			} else {
 				req.decoded = decoded;
 				new Promise(
@@ -36,38 +35,31 @@ exports.verifyUser = function(req, res, next) {
 					function(user){
 						if(user) {
 							if(!user.activated){
-								message.error = {verify_user: "user_not_activated"};
-								res.status(401).json(message);
-								end();
+								message.error({verify_user: "user_not_activated"});
+								res.status(401).json(message.send());
 							}else if (user.deleted){
-								message.error = {verify_user: "user_deleted"};
-								res.status(401).json(message);
-								end();
+								message.error({verify_user: "user_deleted"});
+								res.status(401).json(message.send());
 							}
-							console.log("verifyUser success");
 							next();
 						} else {
 							throw "error user is null"
 						}
 				}).catch(function (err){
-					console.log("verifyUser error");
-					message.error = {verify_user: err};
-					res.status(401).json(message);
+					message.error({verify_user: err});
+					res.status(401).json(message.send());
 				});
 			}
 		})
 	}
 	else {
-		console.log("verifyUser error token");
-		message.error = {verify_user: "no_token"};
-		res.status(401).json(message);
-		end();
+		message.error({verify_user: "no_token"});
+		res.status(401).json(message.send());
 	}
 };
 
 exports.verifyRole = function(whitelist){
 	return function(req, res, next) {
-		console.log("verifyng role");
 		new Promise(
 			function (resolve, reject) {
 				models.User_Role.findAll({
@@ -100,20 +92,16 @@ exports.verifyRole = function(whitelist){
 					}
 				}
 				if (found){
-					console.log("verifyRole success");
 					req.role = roles;
 					next();
 				} else {
-					console.log("verifyRole error");
-					message.error = {verify_role: "access_not_allowed"};
-					res.status(401).json(message);
-					end();
+					message.error({verify_role: "access_not_allowed"});
+					res.status(401).json(message.send());
 				}
 			}).catch(
 				function (err) {
-					console.log("verifyRole error catch");
-					message.error = {verify_role: err};
-					res.status(401).json(message);
+					message.error({verify_role: err});
+					res.status(401).json(message.send());
 				}
 			)
 	}
