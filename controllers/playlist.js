@@ -19,13 +19,11 @@ const index = (req, res) => {
       res.status(200).json(playlists);
     })
     .catch((error) => {
-      console.warn(error);
       res.status(500).json(error);
     })
 };
 
 const create = (req, res) => {
-  console.warn('create playlist');
   req.body.id_user = req.decoded;
   Playlist.create(req.body)
     .then((playlist) => {
@@ -38,7 +36,6 @@ const create = (req, res) => {
 
 
 const addSongs = (req, res) => {
-  console.warn('add songs to playlist');
   PlaylistAudiofile.create(req.body)
     .then((playlistAudiofile) => {
       return res.status(200).send({message : 'playlist_audiofile_added_success', playlistAudiofile})

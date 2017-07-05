@@ -3,13 +3,14 @@ var config = require('../server/config/config.js');
 var models  = require('../server/models');
 const util = require('util');
 var message = require('../server/enum/message');
+const Role = models.Role;
 
 exports.getToken = function(user) {
 	return jwt.sign(user.id, config.secretKey);
 };
 
 exports.verifyUser = function(req, res, next) {
-	var token = req.cookies['token'];
+	var token = req.cookies['token'] || req.headers['authorization'];
 	if (token) {
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {
@@ -22,10 +23,20 @@ exports.verifyUser = function(req, res, next) {
 						models.User.findOne({
 							where: {
 								id: req.decoded
-							}
+							},
+							include: [{
+								model: Role,
+								attributes: ['id', 'role']
+							}]
 						}).then(function (user) {
+							var roles = [];
+							user.Roles.forEach(function(element) {
+								roles.push(element.id);
+							}, this);
+							req.roles = roles;
 							resolve(user);
 						}).catch(function (err) {
+							console.warn(err);
 							reject(err)
 						})
 					}
@@ -34,11 +45,12 @@ exports.verifyUser = function(req, res, next) {
 						if(user) {
 							if(!user.activated){
 								message.error({verify_user: "user_not_activated"});
-								res.status(401).json(message.send());
-							}else if (user.deleted){
+								return res.status(401).json(message.send());
+							} else if (user.deleted){
 								message.error({verify_user: "user_deleted"});
-								res.status(401).json(message.send());
+								return res.status(401).json(message.send());
 							}
+							req.user = user;
 							next();
 						} else {
 							throw "error user is null"

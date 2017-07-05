@@ -9,8 +9,9 @@ const config = require('../config.js');
 const fse = require('fs-extra');
 // const jsmediatags = require('jsmediatags');
 const mm = require('musicmetadata');
-
+const path = require('path');
 const Duplex = require('stream').Duplex; 
+const userRole = model.User_Role;
 
 function bufferToStream(buffer) {  
     let stream = new Duplex();
@@ -25,33 +26,26 @@ function checkReqBody(req) {
     if (req.decoded) {
         req.body.id_user = req.decoded;
     }
-    if (req.files && req.files.audio_file) {
-        req.body.original_filename = req.files.audio_file[0].originalname;
-        req.body.new_filename = req.files.audio_file[0].filename;
-        req.body.audio_mimetype = req.files.audio_file[0].mimetype;
-    }
-    if (req.files && req.files.cover) {
-        req.body.cover_mimetype = req.files.cover[0].mimetype;
-        req.body.cover = req.files.cover[0].filename;
-    }
-    if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
-        if (req.body.explicit_content === 'on') {
-            req.body.explicit_content = true;
-        } else {
-            req.body.explicit_content = false;
 
-        }
-    }
-    if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
-        if (req.body.download_authorization === 'on') {
-            req.body.download_authorization = true;
-        } else {
-            req.body.download_authorization = false;
+    // if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
+    //     if (req.body.explicit_content === 'true') {
+    //         req.body.explicit_content = true;
+    //     } else {
+    //         req.body.explicit_content = false;
 
-        }
-    }
+    //     }
+    // }
 
+    // if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
+    //     if (req.body.download_authorization === 'true') {
+    //         req.body.download_authorization = true;
+    //     } else {
+    //         req.body.download_authorization = false;
+
+    //     }
+    // }
 }
+
 var createAudioGender = (audiofile,idGenders, callback) => {
         if (typeof idGenders === 'string') {
             idGenders = idGenders.split(",");
@@ -84,22 +78,17 @@ const index = (req, res)  => {
             attributes: ['id', 'name']
         }]
     }
-     var opts = {
-        include: [{
-            model: Gender,
-            attributes: ['id', 'name']
-        }]
-    }
     if (req.query.limit && req.query.offset) {
         opts.limit = parseInt(req.query.limit, 10);
         opts.offset = parseInt(req.query.offset, 10);
     }
     Audiofile.findAll(opts)
         .then((audiofiles) => {
-            res.status(200).json(audiofiles);
+            res.status(200).send({message :'audiofile_myuploads_success', audiofiles})
+
         })
         .catch((error) => {
-            res.status(500).json(error);
+            res.status(500).send({message :'audiofile_myuploads_error'}).end();
         })
 };
 
@@ -112,18 +101,32 @@ const create = (req, res) => {
                     return res.status(500).json({message: 'audiofile_created_genders_error'});
                 }
                 audiofile.genders = genders;
-                return res.status(201).send({message : 'audiofile_created_success', audiofile})
+                //TODO mettre une constante pour le role
+                if (req.roles.indexOf(4) < 0) {
+                    req.roles.push(4)
+                    userRole.create({id_user: req.user.id, id_role : 4 })
+                    .catch((err) => {
+                        console.warn(err);
+                    });
+                }
+                return res.status(201).send({message : 'audiofile_created_success', audiofile, roles : req.roles})
             })
         })
         .catch((error) => {
-            console.warn(error)
-            res.status(500).json(error);
+            // TODO a mettre dans une fonction
+            var errorsFormatted = {};
+            var errors = error.errors;
+            for (var i = 0; i < errors.length ; i++) {
+                if (!errorsFormatted[errors[i].path]) {
+                    errorsFormatted[errors[i].path] = errors[i].message
+                }
+            }
+            // 422 si tous sont des erreurs de validation
+            res.status(422).json({ message: "audiofile_created_error",errors : errorsFormatted});
         })
 };
 
 const view = (req, res) => {
-    console.warn(req.params.id);
-    
     Audiofile.findById(req.params.id,{
             attributes: ['id', 'title', 'description', 'artist', 'composer','duration', 'creation_date','explicit_content', 'download_authorization', 'id_user'],
             include: [{
@@ -133,6 +136,9 @@ const view = (req, res) => {
         })
         .then((audiofile) => {
             res.status(200).json(audiofile);
+            if (audiofile.id_user !== req.decoded) {
+                audiofile.save({total_view : audiofile.total_view + 1})
+            }
         })
         .catch((error) => {
             res.status(500).json(error);
@@ -173,6 +179,8 @@ const deleteAudio =(req, res) => {
             }
         })
         .then(function(deletedRecords) {
+
+            //TODO si l'utilisateur n'a plus d'upload enlever son role de owner ?
             res.status(200).json(deletedRecords);
         })
         .catch(function(error) {
@@ -199,6 +207,7 @@ const action = (req, res) => {
                             "Content-Disposition" : "attachment; filename=" + audiofile.original_filename,
                             "Content-Length"      : stats.size,
                         });
+                        audiofile.save({total_download : audiofile.total_download + 1})
                     } else {
                         res.writeHead(200, {
                             "Content-Type": audiofile.audio_mimetype,
@@ -307,21 +316,20 @@ const deleteComment = (req, res) => {
 const metadata = (req, res) => {
     var parser = mm(bufferToStream(req.file.buffer), function (err, metadata) {
         if (err) return res.status(500).send(err).end()
-        console.log(metadata);
         return res.status(200).send({data : metadata}).end()
     });
 }
 const cover = (req, res) => {
         Audiofile.findById(req.params.id)
         .then((audiofile) => {
-            console.warn(config.UPLOAD_PATH + '/' + audiofile.cover);
             // res.header('Content-Type', 'image/jpeg');
             // res.sendFile(config.UPLOAD_PATH + '/' + audiofile.cover);
+
+            // TODO test si le fichier existe puis faire un pipe cf : ci dessous
             // fse.createReadStream(config.UPLOAD_PATH + '/' + '0bb22c8e65a91d92f62779d502d9aa9e').pipe(res)
-            fse.readFile(config.UPLOAD_PATH + '/' + audiofile.cover, function (err, content) {
+            fse.readFile(path.join(config.UPLOAD_IMAGES_PATH + '/' + audiofile.cover), function (err, content) {
                 if (err) {
                     res.writeHead(400, {'Content-type':'text/html'})
-                    console.log(err);
                     res.end("No such image");    
                 } else {
                     //specify the content type in the response will be an image
@@ -331,7 +339,6 @@ const cover = (req, res) => {
     });
         })
         .catch((error) => {
-            console.warn(error)
             res.status(500).end()
         })
 }

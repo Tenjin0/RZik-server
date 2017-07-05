@@ -37,6 +37,35 @@ app.use(cookieParser());
 var env = require('dotenv').load();
 //Sync Database
 
+// app.use(expressValidator({
+//     errorFormatter: function(param, msg, value) {
+//         var namespace = param.split('.')
+//         , root    = namespace.shift()
+//         , formParam = root;
+ 
+//         while(namespace.length) {
+//             formParam += '[' + namespace.shift() + ']';
+//         }
+//         return {
+//             param : formParam,
+//             msg   : msg,
+//             value : value
+//         };
+//     },
+//     customValidators: {
+//         isArray: function(value) {
+//             return Array.isArray(value);
+//         },
+//         gte: function(param, num) {
+//             return param >= num;
+//         },
+//         lte: function(param, num) {
+//             return param <= num;
+//         }
+//     }
+// }));
+
+
 // passport init
 app.use(passport.initialize());
 
