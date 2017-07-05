@@ -327,7 +327,8 @@ const cover = (req, res) => {
 
             // TODO test si le fichier existe puis faire un pipe cf : ci dessous
             // fse.createReadStream(config.UPLOAD_PATH + '/' + '0bb22c8e65a91d92f62779d502d9aa9e').pipe(res)
-            fse.readFile(path.join(config.UPLOAD_IMAGES_PATH + '/' + audiofile.cover), function (err, content) {
+            console.warn(path.join(config.UPLOAD_COVERS_PATH,audiofile.cover))
+            fse.readFile(path.join(config.UPLOAD_COVERS_PATH, audiofile.cover), function (err, content) {
                 if (err) {
                     res.writeHead(400, {'Content-type':'text/html'})
                     res.end("No such image");    
