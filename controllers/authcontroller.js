@@ -26,9 +26,8 @@ function has_error(res, err, info){
 function send_token(res, user){
     res.clearCookie('token');
     let token = verify.getToken(user);
-    user.token = token;
     user.password = undefined;
     user.id = undefined;
     res.cookie('token', token, {maxAge: 900000, httpOnly: true});
-    res.json(user);
+    res.send({user, token});
 }

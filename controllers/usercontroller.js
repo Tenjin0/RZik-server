@@ -6,6 +6,9 @@ var language = require('../server/enum/language');
 var role = require('../server/enum/role');
 const util = require('util');
 var message = require('../server/enum/message');
+
+const Role = models.Role;
+
 //let message = {error:{},success:{}};
 function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
@@ -135,7 +138,6 @@ var Users = {
     },
     findById : function (req, res) {
         let id = req.params.id;
-
         new Promise(
             function (resolve, reject) {
                 models.User.findOne({
@@ -248,6 +250,25 @@ var Users = {
         }).catch(function (err) {
             message.error({delete_users: err});
             res.status(401).json(message.send());
+        })
+    },
+
+    myInfo : function(req, res) {
+        //TODO faire une fonction dans le model
+        models.User.findById(req.user.id,{
+            include: [{
+                model: Role,
+                attributes: ['id', 'role']
+            }]
+        })
+        .then(function (user) {
+            user.password  = undefined;
+            user.Roles.forEach(function(element) {
+                element.User_Role = undefined;
+            }, this);
+            res.status(200).send({ message : "user_myinfo_success", user });
+        }).catch(function (err) {
+            res.status(500).send({ message : "user_myinfo_error", err });
         })
     }
 };

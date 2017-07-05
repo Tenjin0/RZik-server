@@ -23,7 +23,7 @@ var config = {
 	"port": 3306,
     "dialect": "mysql"
   },
-  "secretKey":"azertyiop"
+  "secretKey":"azertyiop" // TODO préférence mettre dans une variable d'environnement plutot que sur un fichier.
 }
 
 module.exports = config;
