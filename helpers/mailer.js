@@ -1,7 +1,6 @@
 'use strict';
 const nodemailer = require('nodemailer');
 const config = require('../config.js')
-
 // create reusable transporter object using the default SMTP transport
 let transporter = nodemailer.createTransport({
     host: config.SMTP_URL,
@@ -12,7 +11,6 @@ let transporter = nodemailer.createTransport({
         pass: config.EMAIL_PASS
     }
 });
-
 var send = (opts, callback) => {
     // setup email data with unicode symbols
     let mailOptions = {

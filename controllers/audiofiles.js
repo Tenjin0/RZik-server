@@ -65,13 +65,13 @@ const index = (req, res)  => {
         opts.offset = parseInt(req.query.offset, 10);
     }
     Audiofile.findAll(opts)
-        .then((audiofiles) => {
-            res.status(200).send({message :'audiofile_myuploads_success', audiofiles})
+    .then((audiofiles) => {
+        res.status(200).send({message :'audiofile_myuploads_success', audiofiles})
 
-        })
-        .catch((error) => {
-            res.status(500).send({message :'audiofile_myuploads_error'}).end();
-        })
+    })
+    .catch((error) => {
+        res.status(500).send({message :'audiofile_myuploads_error'}).end();
+    })
 };
 
 const create = (req, res) => {
@@ -111,24 +111,20 @@ const create = (req, res) => {
 };
 
 const view = (req, res) => {
-    console.warn('view');
     Audiofile.findById(req.params.id,{
-            attributes: ['id', 'title', 'description', 'artist', 'composer','duration', 'creation_date','explicit_content', 'download_authorization', 'id_user'],
-            include: [{
-                model: Gender,
-                attributes: ['id', 'name']
-            }]
-        })
-        .then((audiofile) => {
-            res.status(200).json(audiofile);
-            if (audiofile.id_user !== req.decoded) {
-                audiofile.save({total_view : audiofile.total_view + 1})
-            }
-        })
-        .catch((error) => {
-            console.warn(error)
-            res.status(500).json(error);
-        })
+        attributes: ['id', 'title', 'description', 'artist', 'composer','duration', 'creation_date','explicit_content', 'download_authorization', 'id_user'],
+        include: [{
+            model: Gender,
+            attributes: ['id', 'name']
+        }]
+    })
+    .then((audiofile) => {
+        res.status(200).json(audiofile);
+    })
+    .catch((error) => {
+        console.warn(error)
+        res.status(500).json(error);
+    })
 };
 
 const update = (req, res)  => {
@@ -201,14 +197,16 @@ const action = (req, res) => {
                             "Content-Disposition" : "attachment; filename=" + audiofile.original_filename,
                             "Content-Length"      : stats.size,
                         });
-                        audiofile.save({total_download : audiofile.total_download + 1})
+                        
+                        audiofile.update({total_download : audiofile.total_download + 1}).then()
+                        .catch()
                     } else {
                         res.writeHead(200, {
                             "Content-Type": audiofile.audio_mimetype,
                             "Content-Length"      : stats.size,
                         });
+                        audiofile.update({total_play : audiofile.total_download + 1}).then().catch()
                     }
-                    audiofile.save({total_play : audiofile.total_download + 1})
                     return fse.createReadStream(filePath).pipe(res);
                 })
             })
@@ -276,9 +274,11 @@ const createComment = (req, res) => {
     Comment.create(req.body)
     .then((createdComment) => {
         Email.send({}, (err) => {
-            return res.status(201).send({message : 'comment_created_success', comment : createdComment}).end();
+            console.warn(err);
         })
+        return res.status(201).send({message : 'comment_created_success', comment : createdComment}).end();
     }).catch((error) => {
+        console.warn(error)
         res.status(500).send({message : 'comment_created_error'}).end();
     })
 }
@@ -317,7 +317,6 @@ const metadata = (req, res) => {
     });
 }
 const cover = (req, res) => {
-        console.warn('cover')
         Audiofile.findById(req.params.id)
         .then((audiofile) => {
             
@@ -326,7 +325,6 @@ const cover = (req, res) => {
 
             // TODO test si le fichier existe puis faire un pipe cf : ci dessous
             // fse.createReadStream(config.UPLOAD_PATH + '/' + '0bb22c8e65a91d92f62779d502d9aa9e').pipe(res)
-            console.warn(path.join(config.UPLOAD_COVERS_PATH,audiofile.cover))
             fse.readFile(path.join(config.UPLOAD_COVERS_PATH, audiofile.cover), function (err, content) {
                 if (err) {
                     res.writeHead(400, {'Content-type':'text/html'})

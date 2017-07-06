@@ -22,6 +22,8 @@ describe('Audiofile', function() {
     var users;
 
     before(function(done) {
+
+        //TODO a metre dans un fichier initDB
         var asyncCount = 0;
         var total = 3;
         var innerCallback = (done) => {

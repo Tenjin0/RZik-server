@@ -28,7 +28,7 @@ exports.verifyUser = function(req, res, next) {
 								model: Role,
 								attributes: ['id', 'role']
 							}]
-						}).then(function (user) {
+						}).then((user) => {
 							var roles = [];
 							user.Roles.forEach(function(element) {
 								roles.push(element.id);
@@ -36,7 +36,6 @@ exports.verifyUser = function(req, res, next) {
 							req.roles = roles;
 							resolve(user);
 						}).catch(function (err) {
-							console.warn(err);
 							reject(err)
 						})
 					}
