@@ -26,24 +26,6 @@ function checkReqBody(req) {
     if (req.decoded) {
         req.body.id_user = req.decoded;
     }
-
-    // if(req.body.explicit_content && typeof req.body.explicit_content  === 'string') {
-    //     if (req.body.explicit_content === 'true') {
-    //         req.body.explicit_content = true;
-    //     } else {
-    //         req.body.explicit_content = false;
-
-    //     }
-    // }
-
-    // if(req.body.download_authorization && typeof req.body.download_authorization === 'string') {
-    //     if (req.body.download_authorization === 'true') {
-    //         req.body.download_authorization = true;
-    //     } else {
-    //         req.body.download_authorization = false;
-
-    //     }
-    // }
 }
 
 var createAudioGender = (audiofile,idGenders, callback) => {
@@ -116,17 +98,20 @@ const create = (req, res) => {
             // TODO a mettre dans une fonction
             var errorsFormatted = {};
             var errors = error.errors;
-            for (var i = 0; i < errors.length ; i++) {
-                if (!errorsFormatted[errors[i].path]) {
-                    errorsFormatted[errors[i].path] = errors[i].message
+            if (errors) {
+                for (var i = 0; i < errors.length ; i++) {
+                    if (!errorsFormatted[errors[i].path]) {
+                        errorsFormatted[errors[i].path] = errors[i].message
+                    }
                 }
             }
             // 422 si tous sont des erreurs de validation
-            res.status(422).json({ message: "audiofile_created_error",errors : errorsFormatted});
+            res.status(400).send({ message: "audiofile_created_error",errors : errorsFormatted});
         })
 };
 
 const view = (req, res) => {
+    console.warn('view');
     Audiofile.findById(req.params.id,{
             attributes: ['id', 'title', 'description', 'artist', 'composer','duration', 'creation_date','explicit_content', 'download_authorization', 'id_user'],
             include: [{
@@ -141,6 +126,7 @@ const view = (req, res) => {
             }
         })
         .catch((error) => {
+            console.warn(error)
             res.status(500).json(error);
         })
 };
@@ -164,7 +150,15 @@ const update = (req, res)  => {
                     res.status(500).send(error).end();
                 })
             }).catch((error) => {
-                res.status(500).send(error).end();
+                //TODO a refactoriser dans une fonction
+                var errorsFormatted = {};
+                var errors = error.errors;
+                for (var i = 0; i < errors.length ; i++) {
+                    if (!errorsFormatted[errors[i].path]) {
+                        errorsFormatted[errors[i].path] = errors[i].message
+                    }
+                }
+                res.status(500).send({ message: "audiofile_updated_error",errors : errorsFormatted}).end();
             })
         })
         .catch(function(error) {
@@ -192,11 +186,11 @@ const action = (req, res) => {
     if (req.params.id) {
         Audiofile.findById(req.params.id)
             .then((audiofile) => {
-                const filePath = config.UPLOAD_PATH + '/' + audiofile.new_filename;
+                const filePath = path.join(config.UPLOAD_AUDIOS_PATH , audiofile.new_filename);
                 fse.stat(filePath, function(err, stats) {
                     if (err) {
-                        response.statusCode = 500;
-                        return response.end();
+                        res.statusCode = 500;
+                        return res.end();
                     }
                     if(req.params.action === 'download') {
                         if (!audiofile.download_authorization){
@@ -214,11 +208,13 @@ const action = (req, res) => {
                             "Content-Length"      : stats.size,
                         });
                     }
-                    fse.createReadStream(filePath).pipe(res);
+                    audiofile.save({total_play : audiofile.total_download + 1})
+                    return fse.createReadStream(filePath).pipe(res);
                 })
             })
             .catch((error) => {
-                res.status(500).send({message : "audio_notfound"}).end();
+                console.warn(error)
+                return res.status(500).send({message : "audio_notfound"}).end();
             })
     }
 }
@@ -236,6 +232,7 @@ const myuploads = (req, res) => {
         res.status(200).send({message :'audiofile_myuploads_success', audiofiles})
     })
     .catch((error) => {
+        console.warn(error)
         res.status(500).send({message :'audiofile_myuploads_error'}).end();
     })
 }
@@ -320,8 +317,10 @@ const metadata = (req, res) => {
     });
 }
 const cover = (req, res) => {
+        console.warn('cover')
         Audiofile.findById(req.params.id)
         .then((audiofile) => {
+            
             // res.header('Content-Type', 'image/jpeg');
             // res.sendFile(config.UPLOAD_PATH + '/' + audiofile.cover);
 
@@ -331,16 +330,16 @@ const cover = (req, res) => {
             fse.readFile(path.join(config.UPLOAD_COVERS_PATH, audiofile.cover), function (err, content) {
                 if (err) {
                     res.writeHead(400, {'Content-type':'text/html'})
-                    res.end("No such image");    
+                    return res.end("No such image");    
                 } else {
                     //specify the content type in the response will be an image
                     res.writeHead(200,{'Content-type':audiofile.cover_mimetype});
-                    res.end(content);
+                    return res.end(content);
                 }
     });
         })
         .catch((error) => {
-            res.status(500).end()
+            return res.status(500).end()
         })
 }
 

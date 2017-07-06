@@ -17,9 +17,9 @@ const role = require('../server/enum/role');
 // };
 
 /* GET users listing. */
-router.get('/', audioController.index);
+router.get('/',verify.verifyRole([role.ADMINISTRATOR]), audioController.index);
 router.get('/myuploads',verify.verifyRole([role.OWNER]), audioController.myuploads);
-router.post('/metadata',verify.verifyRole([role.OWNER]), upload.metadata, audioController.metadata);
+router.post('/metadata', upload.metadata, audioController.metadata);
 router.post('/',upload.both, audioController.create);
 router.get('/:id',verify.verifyRole([role.OWNER, role.ADMINISTRATOR]), audioController.view);
 router.get('/:id/cover', audioController.cover);

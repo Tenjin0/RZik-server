@@ -5,15 +5,17 @@ var config = {
     "password": process.env.MYSQL_PASS || "pass",
     "host": process.env.MYSQL_HOST || "127.0.0.1",
     "port": 3306,
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "logging": false
   },
   "test": {
     "username": "root",
     "database": "rzik-test",
     "password": process.env.MYSQL_PASS || "pass",
     "host": process.env.MYSQL_HOST || "127.0.0.1",
-	"port": 3306,
-    "dialect": "mysql"
+	  "port": 3306,
+    "dialect": "mysql",
+    "logging": false
   },
   "production": {
     "username": "root",
@@ -23,7 +25,7 @@ var config = {
 	"port": 3306,
     "dialect": "mysql"
   },
-  "secretKey":"azertyiop" // TODO préférence mettre dans une variable d'environnement plutot que sur un fichier.
+  "secretKey":"azertyiop" // TODO préférence mettre dans une variable d'environnement plutot qu'ici.
 }
 
 module.exports = config;

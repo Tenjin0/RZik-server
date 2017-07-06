@@ -6,7 +6,6 @@ const crypto = require('crypto');
 var storageAudio = multer.diskStorage({
     destination: function(req, file, callback) {
         if (file.fieldname === 'audio_file') {
-            
             req.body.original_filename = file.originalname;
             req.body.audio_mimetype = file.mimetype;
             return callback(null, config.UPLOAD_AUDIOS_PATH);

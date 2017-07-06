@@ -10,7 +10,7 @@ exports.getToken = function(user) {
 };
 
 exports.verifyUser = function(req, res, next) {
-	var token = req.cookies['token'] || req.headers['authorization'];
+	var token = req.cookies['token'] || req.headers['authorization'] || req.query.token;
 	if (token) {
 		jwt.verify(token, config.secretKey, function(err, decoded) {
 			if(err) {

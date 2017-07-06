@@ -99,7 +99,7 @@ module.exports = function(sequelize, DataTypes) {
                 }
             }
         },
-        total_view : {
+        total_play : {
             type : DataTypes.INTEGER,
             defaultValue : 0
         },
