@@ -7,6 +7,7 @@ const Audiofile = require('../server/models/').Audiofile;
 const upload = require('../middlewares/uploadAudio');
 const verify = require('../middlewares/verify');
 const role = require('../server/enum/role');
+const sendSeekable = require('send-seekable');
 
 // const audioFilter = function(req, file, cb) {
 //     // accept image only
@@ -17,7 +18,7 @@ const role = require('../server/enum/role');
 // };
 
 /* GET users listing. */
-router.get('/',verify.verifyRole([role.ADMINISTRATOR]), audioController.index);
+router.get('/',verify.verifyRole([role.ADMINISTRATOR], [role.USER]), audioController.index);
 router.get('/myuploads',verify.verifyRole([role.OWNER]), audioController.myuploads);
 router.post('/metadata', upload.metadata, audioController.metadata);
 router.post('/',upload.both, audioController.create);

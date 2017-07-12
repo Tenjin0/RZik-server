@@ -12,6 +12,7 @@ const mm = require('musicmetadata');
 const path = require('path');
 const Duplex = require('stream').Duplex; 
 const userRole = model.User_Role;
+// const sendSeekable = require('send-seekable');
 
 function bufferToStream(buffer) {  
     let stream = new Duplex();
@@ -55,13 +56,16 @@ var createAudioGender = (audiofile,idGenders, callback) => {
 
 const index = (req, res)  => {
     var opts = {
+        attributes: ['id', 'title', 'description', 'artist', 'composer','cover','total_play', 'new_filename'],
         include: [{
             model: Gender,
             attributes: ['id', 'name']
         }]
     }
-    if (req.query.limit && req.query.offset) {
+    if (req.query.limit) {
         opts.limit = parseInt(req.query.limit, 10);
+    }
+    if (req.query.offset) {
         opts.offset = parseInt(req.query.offset, 10);
     }
     Audiofile.findAll(opts)
@@ -70,6 +74,7 @@ const index = (req, res)  => {
 
     })
     .catch((error) => {
+        console.warn(error);
         res.status(500).send({message :'audiofile_myuploads_error'}).end();
     })
 };
@@ -198,14 +203,14 @@ const action = (req, res) => {
                             "Content-Length"      : stats.size,
                         });
                         
-                        audiofile.update({total_download : audiofile.total_download + 1}).then()
-                        .catch()
+                        audiofile.update({total_download : audiofile.total_download + 1})
                     } else {
                         res.writeHead(200, {
+                            "Accept-Ranges": "bytes",
                             "Content-Type": audiofile.audio_mimetype,
                             "Content-Length"      : stats.size,
                         });
-                        audiofile.update({total_play : audiofile.total_download + 1}).then().catch()
+                        audiofile.update({total_play : audiofile.total_download + 1})
                     }
                     return fse.createReadStream(filePath).pipe(res);
                 })
